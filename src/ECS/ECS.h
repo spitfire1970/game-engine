@@ -98,7 +98,7 @@ public:
 
   // Entity management
   Entity CreateEntity();
-  void AddEntityToSystem(Entity entity);
+  void AddEntityToSystems(Entity entity);
 
   // Component management
   template <typename TComponent, typename... TArgs>
@@ -155,7 +155,7 @@ void Registry::AddComponent(Entity entity, TArgs &&...args) {
   if (entityId >= componentPool->GetSize()) {
     componentPool->Resize(entityId + 1);
   }
-  // can write this in direct initialization
+  // can write this in direct initialization format
   TComponent newComponent = TComponent(std::forward<TArgs>(args)...);
 
   componentPool->Set(entityId, newComponent);

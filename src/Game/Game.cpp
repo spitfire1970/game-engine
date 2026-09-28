@@ -7,6 +7,7 @@
 
 Game::Game() {
   isRunning = false;
+  registry = new Registry();
   Logger::Log("Game constructor called!");
 }
 
@@ -67,8 +68,8 @@ glm::vec2 playerPosition;
 glm::vec2 playerVelocity;
 
 void Game::Setup() {
-  playerPosition = glm::vec2(10.0, 20.0);
-  playerVelocity = glm::vec2(20.0, 10.0);
+  Entity tank = registry->CreateEntity();
+  Entity truck = registry->CreateEntity();
 }
 void Game::Update() {
   // a tick is 1 millisecond

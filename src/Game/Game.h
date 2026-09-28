@@ -1,5 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
+#include "../ECS/ECS.h"
 #include <SDL2/SDL.h>
 
 const int FPS = 1200;
@@ -11,6 +12,7 @@ private:
   bool isRunning;
   SDL_Window *window;
   SDL_Renderer *renderer;
+  Registry *registry;
 
 public:
   Game();

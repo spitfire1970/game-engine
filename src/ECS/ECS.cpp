@@ -9,7 +9,10 @@ Entity Registry::CreateEntity() {
   entityId = numEntities++;
   Entity entity = Entity(entityId);
   entitiesToBeAdded.insert(entity);
-  Logger::Log("New entity created" + std::to_string(entityId));
+  if (entityId >= entityComponentSignatures.size()) {
+    entityComponentSignatures.resize(entityId + 1);
+  }
+  Logger::Log("New entity created with id = " + std::to_string(entityId));
   return entity;
 }
 
@@ -21,7 +24,7 @@ void System::RemoveEntityFromSystem(Entity entity) {
       entities.end());
 };
 
-void Registry::AddEntityToSystem(Entity entity) {
+void Registry::AddEntityToSystems(Entity entity) {
   const auto entityId = entity.GetId();
   const auto entityComponentSignature = entityComponentSignatures[entityId];
   for (auto &system : systems) {
@@ -39,4 +42,11 @@ std::vector<Entity> System::GetSystemEntities() const { return entities; }
 
 const Signature &System::GetComponentSignature() const {
   return componentSignature;
+}
+
+void Registry::Update() {
+  for (auto entity : entitiesToBeAdded) {
+    AddEntityToSystems(entity);
+  }
+  entitiesToBeAdded.clear();
 }
