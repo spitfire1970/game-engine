@@ -1,13 +1,19 @@
 #include "Game.h"
+#include "../Components/RigidBodyComponent.h"
+#include "../Components/SpriteComponent.h"
+#include "../Components/TransformComponent.h"
 #include "../Logger/Logger.h"
+#include "../Systems/MovementSystem.h"
+#include "../Systems/RenderSystem.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <memory>
 
 Game::Game() {
   isRunning = false;
-  registry = new Registry();
+  registry = std::make_unique<Registry>();
   Logger::Log("Game constructor called!");
 }
 
@@ -68,8 +74,20 @@ glm::vec2 playerPosition;
 glm::vec2 playerVelocity;
 
 void Game::Setup() {
+  registry->AddSystem<MovementSystem>();
+  registry->AddSystem<RenderSystem>();
   Entity tank = registry->CreateEntity();
+
+  tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
+                                        glm::vec2(1.0, 1.0), 0.0);
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 50.0));
+  tank.AddComponent<SpriteComponent>(10, 10);
+
   Entity truck = registry->CreateEntity();
+  truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 20.0));
+  truck.AddComponent<SpriteComponent>(10, 50);
 }
 void Game::Update() {
   // a tick is 1 millisecond
@@ -84,8 +102,8 @@ void Game::Update() {
 
   millisecsPrevFrame = SDL_GetTicks();
   // to make velocity act with respect to time rather than frame rate
-  playerPosition.x += playerVelocity.x * deltaTime;
-  playerPosition.y += playerVelocity.y * deltaTime;
+  registry->GetSystem<MovementSystem>().Update(deltaTime);
+  registry->Update();
 }
 
 void Game::Render() {
@@ -93,16 +111,7 @@ void Game::Render() {
   // do things in back buffer
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
-
-  SDL_Surface *surface = IMG_Load("./assets/images/tank-tiger-right.png");
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_FreeSurface(surface);
-
-  SDL_Rect dstRect = {static_cast<int>(playerPosition.x),
-                      static_cast<int>(playerPosition.y), 32, 32};
-  SDL_RenderCopy(renderer, texture, NULL, &dstRect);
-  SDL_DestroyTexture(texture);
-
+  registry->GetSystem<RenderSystem>().Update(renderer);
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }
