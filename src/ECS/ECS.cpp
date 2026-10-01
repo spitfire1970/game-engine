@@ -39,7 +39,7 @@ void Registry::AddEntityToSystems(Entity entity) {
   }
 }
 
-std::vector<Entity> System::GetSystemEntities() const { return entities; }
+std::vector<Entity> &System::GetSystemEntities() { return entities; }
 
 const Signature &System::GetComponentSignature() const {
   return componentSignature;

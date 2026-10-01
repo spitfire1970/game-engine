@@ -1,5 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
+#include "../AssetStore/AssetStore.h"
 #include "../ECS/ECS.h"
 #include <SDL2/SDL.h>
 #include <memory>
@@ -14,12 +15,14 @@ private:
   SDL_Window *window;
   SDL_Renderer *renderer;
   std::unique_ptr<Registry> registry;
+  std::unique_ptr<AssetStore> assetStore;
 
 public:
   Game();
   ~Game();
   void Initialize();
   void Run();
+  void LoadLevel(int level);
   void Setup();
   void ProcessInput();
   void Update();
