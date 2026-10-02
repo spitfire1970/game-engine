@@ -73,6 +73,9 @@ void Game::ProcessInput() {
       if (sdlEvent.key.keysym.sym == SDLK_ESCAPE) {
         isRunning = false;
       }
+      if (sdlEvent.key.keysym.sym == SDLK_d) {
+        debugMode = !debugMode;
+      }
       break;
     }
   }
@@ -140,7 +143,7 @@ void Game::LoadLevel(int level) {
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 20.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
-  tank.AddComponent<CollisionComponent>(32, 32);
+  truck.AddComponent<CollisionComponent>(32, 32);
 }
 
 void Game::Setup() { LoadLevel(1); }
@@ -169,7 +172,9 @@ void Game::Render() {
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
   registry->GetSystem<RenderSystem>().Update(renderer, *assetStore);
-  registry->GetSystem<CollisionRenderSystem>().Update(renderer);
+  if (debugMode) {
+    registry->GetSystem<CollisionRenderSystem>().Update(renderer);
+  }
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }

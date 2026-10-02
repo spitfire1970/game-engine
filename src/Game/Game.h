@@ -16,6 +16,7 @@ private:
   SDL_Renderer *renderer;
   std::unique_ptr<Registry> registry;
   std::unique_ptr<AssetStore> assetStore;
+  bool debugMode = false;
 
 public:
   Game();
