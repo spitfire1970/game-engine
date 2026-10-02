@@ -81,6 +81,7 @@ void Game::ProcessInput() {
 void Game::LoadLevel(int level) {
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderSystem>();
+  registry->AddSystem<CollisionSystem>();
   registry->AddSystem<CollisionRenderSystem>();
   registry->AddSystem<AnimationSystem>();
   assetStore->AddTexture(renderer, "tank-image",

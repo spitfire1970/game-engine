@@ -17,15 +17,12 @@ public:
     RequireComponent<CollisionComponent>();
   }
   void Update() {
-    Logger::Log("here");
     auto entities = GetSystemEntities();
-    Logger::Log("here1");
     for (auto i = entities.begin(); i < entities.end(); i++) {
-      for (auto j = i + 1; j < entities.begin(); j++) {
-        Logger::Log("here2");
-        auto &aTransform = i->GetComponent<TransformComponent>();
-        auto &aCollision = j->GetComponent<CollisionComponent>();
-        auto &bTransform = i->GetComponent<TransformComponent>();
+      auto &aTransform = i->GetComponent<TransformComponent>();
+      auto &aCollision = i->GetComponent<CollisionComponent>();
+      for (auto j = i + 1; j < entities.end(); j++) {
+        auto &bTransform = j->GetComponent<TransformComponent>();
         auto &bCollision = j->GetComponent<CollisionComponent>();
 
         bool colliding = checkAABBCollision(

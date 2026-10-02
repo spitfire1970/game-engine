@@ -24,7 +24,8 @@ public:
                              collision.width, collision.height};
       SDL_SetRenderDrawColor(
           renderer, 255,
-          entity.GetComponent<CollisionComponent>().isColliding * 255, 0, 255);
+          (!entity.GetComponent<CollisionComponent>().isColliding) * 255, 0,
+          255);
       SDL_RenderDrawRect(renderer, &rect);
     }
 

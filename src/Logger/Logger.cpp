@@ -7,7 +7,7 @@ const std::string green("\033[0;32m");
 const std::string red("\033[0;31m");
 const std::string reset("\033[0m");
 
-void helper(const std::string &message) {
+std::string helper(const std::string &message) {
   time_t rawtime;
   struct tm *timeinfo;
   char buffer[80];
@@ -16,19 +16,22 @@ void helper(const std::string &message) {
   timeinfo = localtime(&rawtime);
 
   strftime(buffer, 80, "%d %b %G %T", timeinfo);
-  std::cout << buffer;
-  std::cout << " - ";
-  std::cout << message << std::endl << reset;
+
+  return buffer;
 }
 
 void Logger::Log(const std::string &message) {
   std::cout << green;
   std::cout << "LOG | ";
-  helper(message);
+  std::cout << helper(message);
+  std::cout << " - ";
+  std::cout << message << std::endl << reset;
 }
 
 void Logger::Err(const std::string &message) {
-  std::cout << red;
-  std::cout << "ERR | ";
-  helper(message);
+  std::cerr << red;
+  std::cerr << "ERR | ";
+  std::cerr << helper(message);
+  std::cerr << " - ";
+  std::cerr << message << std::endl << reset;
 }
