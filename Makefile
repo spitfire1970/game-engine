@@ -3,7 +3,7 @@
 ###############################################################################
 CC = g++
 LANG_STD = -std=c++17
-COMPILER_FLAGS = -Wall -Wfatal-errors
+COMPILER_FLAGS = -Wall -Wfatal-errors -g
 INCLUDE_PATH = -I/opt/homebrew/include -I/opt/homebrew/opt/lua@5.4/include/lua -I"./libs/"
 
 # Dynamically find all .cpp files recursively so you don't have to update this list

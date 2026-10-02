@@ -7,6 +7,8 @@
 #include "../Components/TransformComponent.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CollisionRenderSystem.h"
+#include "../Systems/CollisionSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include <SDL2/SDL.h>
@@ -79,6 +81,7 @@ void Game::ProcessInput() {
 void Game::LoadLevel(int level) {
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderSystem>();
+  registry->AddSystem<CollisionRenderSystem>();
   registry->AddSystem<AnimationSystem>();
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
@@ -122,6 +125,7 @@ void Game::LoadLevel(int level) {
   chopper.AddComponent<RigidBodyComponent>(glm::vec2(5.0, 10.0));
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
   chopper.AddComponent<AnimationComponent>(2, 10);
+  chopper.AddComponent<CollisionComponent>(32, 32);
 
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
@@ -154,6 +158,7 @@ void Game::Update() {
   // to make velocity act with respect to time rather than frame rate
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
+  registry->GetSystem<CollisionSystem>().Update();
   registry->Update();
 }
 
@@ -163,6 +168,7 @@ void Game::Render() {
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
   registry->GetSystem<RenderSystem>().Update(renderer, *assetStore);
+  registry->GetSystem<CollisionRenderSystem>().Update(renderer);
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }

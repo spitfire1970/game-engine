@@ -7,10 +7,11 @@ struct CollisionComponent {
   int width;
   int height;
   glm::vec2 offset;
+  bool isColliding;
 
   CollisionComponent(int width = 0, int height = 0,
                      glm::vec2 offset = glm::vec2(0))
-      : width(width), height(height), offset(offset) {}
+      : width(width), height(height), offset(offset), isColliding(false) {}
 };
 
 #endif
