@@ -3,19 +3,27 @@
 
 int IComponent::nextId = 0;
 int Entity::GetId() const { return id; }
+void Entity::KillEntity() { registry->KillEntity(*this); }
 
 Entity Registry::CreateEntity() {
   int entityId;
-  entityId = numEntities++;
+  if (freeIds.size() > 0) {
+    entityId = freeIds.front();
+    freeIds.pop_front();
+  } else {
+    entityId = numEntities++;
+    if (entityId >= entityComponentSignatures.size()) {
+      entityComponentSignatures.resize(entityId + 1);
+    }
+  }
   Entity entity = Entity(entityId);
   entity.registry = this;
   entitiesToBeAdded.insert(entity);
-  if (entityId >= entityComponentSignatures.size()) {
-    entityComponentSignatures.resize(entityId + 1);
-  }
   Logger::Log("New entity created with id = " + std::to_string(entityId));
   return entity;
 }
+
+void Registry::KillEntity(Entity entity) { entitiesToBeDeleted.insert(entity); }
 
 void System::AddEntityToSystem(Entity entity) { entities.push_back(entity); }
 void System::RemoveEntityFromSystem(Entity entity) {
@@ -28,14 +36,20 @@ void System::RemoveEntityFromSystem(Entity entity) {
 void Registry::AddEntityToSystems(Entity entity) {
   const auto entityId = entity.GetId();
   const auto entityComponentSignature = entityComponentSignatures[entityId];
-  for (auto &system : systems) {
+  for (auto &systemItem : systems) {
     const auto &systemComponentSignature =
-        system.second->GetComponentSignature();
+        systemItem.second->GetComponentSignature();
     bool isInterested = (entityComponentSignature & systemComponentSignature) ==
                         systemComponentSignature;
     if (isInterested) {
-      system.second->AddEntityToSystem(entity);
+      systemItem.second->AddEntityToSystem(entity);
     }
+  }
+}
+
+void Registry::RemoveEntityFromSystems(Entity entity) {
+  for (auto &systemItem : systems) {
+    systemItem.second->RemoveEntityFromSystem(entity);
   }
 }
 
@@ -46,6 +60,12 @@ const Signature &System::GetComponentSignature() const {
 }
 
 void Registry::Update() {
+  for (auto entity : entitiesToBeDeleted) {
+    RemoveEntityFromSystems(entity);
+    entityComponentSignatures[entity.GetId()].reset();
+    freeIds.push_back(entity.GetId());
+  }
+  entitiesToBeDeleted.clear();
   for (auto entity : entitiesToBeAdded) {
     AddEntityToSystems(entity);
   }

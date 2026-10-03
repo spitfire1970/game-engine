@@ -2,6 +2,7 @@
 #define ECS_H
 #include "../Logger/Logger.h"
 #include <bitset>
+#include <deque>
 #include <set>
 #include <typeindex>
 #include <unordered_map>
@@ -46,6 +47,7 @@ public:
   template <typename TComponent> bool HasComponent() const;
   template <typename TComponent> TComponent &GetComponent() const;
 
+  void KillEntity();
   class Registry *registry;
 };
 
@@ -94,6 +96,7 @@ private:
   int numEntities = 0;
   std::set<Entity> entitiesToBeAdded;
   std::set<Entity> entitiesToBeDeleted;
+  std::deque<int> freeIds;
 
   std::vector<std::shared_ptr<IPool>>
       componentPools; // index into this by component type id (not component id)
@@ -107,8 +110,9 @@ public:
 
   // Entity management
   Entity CreateEntity();
+  void KillEntity(Entity entity);
   void AddEntityToSystems(Entity entity);
-
+  void RemoveEntityFromSystems(Entity entity);
   // Component management
   template <typename TComponent, typename... TArgs>
   void AddComponent(Entity entity, TArgs &&...args);
