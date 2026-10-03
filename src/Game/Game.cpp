@@ -5,10 +5,12 @@
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
+#include "../EventBus/EventBus.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CollisionRenderSystem.h"
 #include "../Systems/CollisionSystem.h"
+#include "../Systems/DamageSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include <SDL2/SDL.h>
@@ -22,6 +24,7 @@ Game::Game() {
   isRunning = false;
   registry = std::make_unique<Registry>();
   assetStore = std::make_unique<AssetStore>();
+  eventBus = std::make_unique<EventBus>();
   Logger::Log("Game constructor called!");
 }
 
@@ -87,6 +90,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<CollisionSystem>();
   registry->AddSystem<CollisionRenderSystem>();
   registry->AddSystem<AnimationSystem>();
+  registry->AddSystem<DamageSystem>();
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
@@ -159,11 +163,17 @@ void Game::Update() {
   double deltaTime = (SDL_GetTicks() - millisecsPrevFrame) / 1000.0;
 
   millisecsPrevFrame = SDL_GetTicks();
+
+  eventBus->Reset();
+
+  // Perform the subscription of the events for all systems
+  registry->GetSystem<DamageSystem>().SubscribeToEvents(*eventBus);
+  registry->Update();
+
   // to make velocity act with respect to time rather than frame rate
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
-  registry->GetSystem<CollisionSystem>().Update();
-  registry->Update();
+  registry->GetSystem<CollisionSystem>().Update(*eventBus);
 }
 
 void Game::Render() {

@@ -3,7 +3,7 @@
 
 int IComponent::nextId = 0;
 int Entity::GetId() const { return id; }
-void Entity::KillEntity() { registry->KillEntity(*this); }
+void Entity::Kill() { registry->KillEntity(*this); }
 
 Entity Registry::CreateEntity() {
   int entityId;

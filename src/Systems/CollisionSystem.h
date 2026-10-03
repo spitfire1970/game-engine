@@ -2,6 +2,7 @@
 #define COLLISIONSYSTEM_H
 
 #include "../ECS/ECS.h"
+#include "../Events/CollisionEvent.h"
 #include "../Logger/Logger.h"
 
 bool checkAABBCollision(float ax, float ay, int aw, int ah, float bx, float by,
@@ -16,7 +17,7 @@ public:
     RequireComponent<TransformComponent>();
     RequireComponent<CollisionComponent>();
   }
-  void Update() {
+  void Update(EventBus &eventBus) {
     auto entities = GetSystemEntities();
     for (auto i = entities.begin(); i < entities.end(); i++) {
       auto &aTransform = i->GetComponent<TransformComponent>();
@@ -32,6 +33,7 @@ public:
             bTransform.position.y + bCollision.offset.y, bCollision.width,
             bCollision.height);
         if (colliding) {
+          eventBus.emitEvent<CollisionEvent>(*i, *j);
           aCollision.isColliding = true;
           bCollision.isColliding = true;
         }

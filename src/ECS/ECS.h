@@ -47,7 +47,7 @@ public:
   template <typename TComponent> bool HasComponent() const;
   template <typename TComponent> TComponent &GetComponent() const;
 
-  void KillEntity();
+  void Kill();
   class Registry *registry;
 };
 
