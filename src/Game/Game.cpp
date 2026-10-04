@@ -11,6 +11,7 @@
 #include "../Systems/CollisionRenderSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
+#include "../Systems/KeyboardMovementSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
 #include <SDL2/SDL.h>
@@ -73,6 +74,7 @@ void Game::ProcessInput() {
       isRunning = false;
       break;
     case SDL_KEYDOWN:
+      eventBus->emitEvent<KeyboardEvent>(sdlEvent.key.keysym.sym);
       if (sdlEvent.key.keysym.sym == SDLK_ESCAPE) {
         isRunning = false;
       }
@@ -91,6 +93,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<CollisionRenderSystem>();
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<DamageSystem>();
+  registry->AddSystem<KeyboardMovementSystem>();
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
@@ -168,6 +171,7 @@ void Game::Update() {
 
   // Perform the subscription of the events for all systems
   registry->GetSystem<DamageSystem>().SubscribeToEvents(*eventBus);
+  registry->GetSystem<KeyboardMovementSystem>().SubscribeToEvents(*eventBus);
   registry->Update();
 
   // to make velocity act with respect to time rather than frame rate

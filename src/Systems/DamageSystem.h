@@ -12,7 +12,6 @@ public:
 
   void SubscribeToEvents(EventBus &eventBus) {
 
-    // Or send call to the member fn:
     auto f = [this](CollisionEvent &ev) { onCollision(ev); };
     eventBus.subscribe<CollisionEvent>(f);
   }
