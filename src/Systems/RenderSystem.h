@@ -33,8 +33,10 @@ public:
         sprite.height = sprite.srcRect.h;
         sprite.width = sprite.srcRect.w;
       }
-      SDL_Rect destRect = {static_cast<int>(transform.position.x - camera.x),
-                           static_cast<int>(transform.position.y - camera.y),
+      SDL_Rect destRect = {static_cast<int>(transform.position.x -
+                                            (sprite.isFixed ? 0 : camera.x)),
+                           static_cast<int>(transform.position.y -
+                                            (sprite.isFixed ? 0 : camera.y)),
                            static_cast<int>(sprite.width * transform.scale.x),
                            static_cast<int>(sprite.height * transform.scale.y)};
       Logger::Log("destRect " + std::to_string(destRect.x) + " " +

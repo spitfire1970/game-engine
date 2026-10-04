@@ -113,7 +113,7 @@ void Game::LoadLevel(int level) {
                          "./assets/tilemaps/jungle.png");
   assetStore->AddTexture(renderer, "chopper-image",
                          "./assets/images/chopper-spritesheet.png");
-
+  assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
   // Load the tilemap
   int tileSize = 32;
   double tileScale = 1.5;
@@ -139,7 +139,7 @@ void Game::LoadLevel(int level) {
           glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
           glm::vec2(tileScale, tileScale), 0.0);
       tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0,
-                                         srcRectX, srcRectY);
+                                         false, srcRectX, srcRectY);
     }
   }
   mapFile.close();
@@ -177,6 +177,12 @@ void Game::LoadLevel(int level) {
   truck.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 20.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
   truck.AddComponent<CollisionComponent>(32, 32);
+
+  Entity radar = registry->CreateEntity();
+  radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74.0, 10.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1, true);
+  radar.AddComponent<AnimationComponent>(8, 5);
 }
 
 void Game::Setup() { LoadLevel(1); }
