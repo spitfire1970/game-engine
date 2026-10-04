@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "../AssetStore/AssetStore.h"
 #include "../Components/AnimationComponent.h"
+#include "../Components/CameraFollowComponent.h"
 #include "../Components/CollisionComponent.h"
 #include "../Components/KeyboardControlComponent.h"
 #include "../Components/RigidBodyComponent.h"
@@ -9,6 +10,7 @@
 #include "../EventBus/EventBus.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
+#include "../Systems/CameraFollowSystem.h"
 #include "../Systems/CollisionRenderSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
@@ -22,6 +24,11 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <memory>
+
+int Game::windowWidth;
+int Game::windowHeight;
+int Game::mapWidth;
+int Game::mapHeight;
 
 Game::Game() {
   isRunning = false;
@@ -97,6 +104,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<DamageSystem>();
   registry->AddSystem<KeyboardMovementSystem>();
   registry->AddSystem<KeyboardControlSystem>();
+  registry->AddSystem<CameraFollowSystem>();
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
@@ -108,9 +116,11 @@ void Game::LoadLevel(int level) {
 
   // Load the tilemap
   int tileSize = 32;
-  double tileScale = 1.0;
+  double tileScale = 1.5;
   int mapNumCols = 25;
   int mapNumRows = 20;
+  Game::mapWidth = tileSize * mapNumCols * tileScale;
+  Game::mapHeight = tileSize * mapNumRows * tileScale;
 
   std::fstream mapFile;
   mapFile.open("./assets/tilemaps/jungle.map");
@@ -142,6 +152,7 @@ void Game::LoadLevel(int level) {
   chopper.AddComponent<CollisionComponent>(32, 32);
   chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
                                                  SDLK_LEFT, 100.0);
+  chopper.AddComponent<CameraFollowComponent>();
 
   Entity chopper2 = registry->CreateEntity();
   chopper2.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
@@ -193,6 +204,7 @@ void Game::Update() {
   // to make velocity act with respect to time rather than frame rate
   registry->GetSystem<MovementSystem>().Update(deltaTime);
   registry->GetSystem<AnimationSystem>().Update();
+  registry->GetSystem<CameraFollowSystem>().Update(camera);
   registry->GetSystem<CollisionSystem>().Update(*eventBus);
 }
 
@@ -201,9 +213,9 @@ void Game::Render() {
   // do things in back buffer
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
-  registry->GetSystem<RenderSystem>().Update(renderer, *assetStore);
+  registry->GetSystem<RenderSystem>().Update(renderer, *assetStore, camera);
   if (debugMode) {
-    registry->GetSystem<CollisionRenderSystem>().Update(renderer);
+    registry->GetSystem<CollisionRenderSystem>().Update(renderer, camera);
   }
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);

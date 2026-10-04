@@ -4,6 +4,7 @@
 #include "../ECS/ECS.h"
 #include "../EventBus/EventBus.h"
 #include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 #include <memory>
 
 const int FPS = 1200;
@@ -19,6 +20,7 @@ private:
   std::unique_ptr<AssetStore> assetStore;
   std::unique_ptr<EventBus> eventBus;
   bool debugMode = false;
+  glm::vec2 camera = glm::vec2(0.0, 0.0);
 
 public:
   Game();
@@ -32,8 +34,10 @@ public:
   void Render();
   void Destroy();
 
-  int windowWidth;
-  int windowHeight;
+  static int windowWidth;
+  static int windowHeight;
+  static int mapWidth;
+  static int mapHeight;
 };
 
 #endif

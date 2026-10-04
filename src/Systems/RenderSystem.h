@@ -5,6 +5,7 @@
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
+#include "../Logger/Logger.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
 
@@ -14,7 +15,8 @@ public:
     RequireComponent<TransformComponent>();
     RequireComponent<SpriteComponent>();
   }
-  void Update(SDL_Renderer *renderer, AssetStore &assetStore) {
+  void Update(SDL_Renderer *renderer, AssetStore &assetStore,
+              glm::vec2 &camera) {
 
     std::vector<Entity> &entities = GetSystemEntities();
     std::sort(entities.begin(), entities.end(), [](Entity &a, Entity &b) {
@@ -31,10 +33,14 @@ public:
         sprite.height = sprite.srcRect.h;
         sprite.width = sprite.srcRect.w;
       }
-      SDL_Rect destRect = {static_cast<int>(transform.position.x),
-                           static_cast<int>(transform.position.y),
+      SDL_Rect destRect = {static_cast<int>(transform.position.x - camera.x),
+                           static_cast<int>(transform.position.y - camera.y),
                            static_cast<int>(sprite.width * transform.scale.x),
                            static_cast<int>(sprite.height * transform.scale.y)};
+      Logger::Log("destRect " + std::to_string(destRect.x) + " " +
+                  std::to_string(destRect.y) + " " +
+                  std::to_string(destRect.w) + " " +
+                  std::to_string(destRect.h));
       SDL_RenderCopyEx(renderer, texture, &sprite.srcRect, &destRect,
                        transform.rotation, NULL, SDL_FLIP_NONE);
     }
