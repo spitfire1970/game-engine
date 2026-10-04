@@ -4,6 +4,7 @@
 #include "../Components/CameraFollowComponent.h"
 #include "../Components/CollisionComponent.h"
 #include "../Components/KeyboardControlComponent.h"
+#include "../Components/ProjectileEmitterComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -17,12 +18,15 @@
 #include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/KeyboardMovementSystem.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/ProjectileEmitterSystem.h"
+#include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderSystem.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 int Game::windowWidth;
@@ -105,6 +109,9 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<KeyboardMovementSystem>();
   registry->AddSystem<KeyboardControlSystem>();
   registry->AddSystem<CameraFollowSystem>();
+  registry->AddSystem<ProjectileEmitterSystem>();
+  registry->AddSystem<ProjectileLifecycleSystem>();
+
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
@@ -114,6 +121,9 @@ void Game::LoadLevel(int level) {
   assetStore->AddTexture(renderer, "chopper-image",
                          "./assets/images/chopper-spritesheet.png");
   assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
+  assetStore->AddTexture(renderer, "bullet-image",
+                         "./assets/images/bullet.png");
+
   // Load the tilemap
   int tileSize = 32;
   double tileScale = 1.5;
@@ -152,6 +162,8 @@ void Game::LoadLevel(int level) {
   chopper.AddComponent<CollisionComponent>(32, 32);
   chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
                                                  SDLK_LEFT, 100.0);
+  chopper.AddComponent<ProjectileEmitterComponent>(
+      5000, std::numeric_limits<int>::max(), 150.0);
   chopper.AddComponent<CameraFollowComponent>();
 
   Entity chopper2 = registry->CreateEntity();
@@ -167,16 +179,20 @@ void Game::LoadLevel(int level) {
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
                                         glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(30.0, 50.0));
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
   tank.AddComponent<CollisionComponent>(32, 32);
+  tank.AddComponent<ProjectileEmitterComponent>(3000, 1000,
+                                                glm::vec2(50.0, 0.0));
 
   Entity truck = registry->CreateEntity();
   truck.AddComponent<TransformComponent>(glm::vec2(100.0, 30.0),
                                          glm::vec2(1.0, 1.0), 0.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 20.0));
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
   truck.AddComponent<CollisionComponent>(32, 32);
+  truck.AddComponent<ProjectileEmitterComponent>(5000, 2000,
+                                                 glm::vec2(0.0, 100.0));
 
   Entity radar = registry->CreateEntity();
   radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74.0, 10.0),
@@ -205,6 +221,7 @@ void Game::Update() {
   registry->GetSystem<DamageSystem>().SubscribeToEvents(*eventBus);
   registry->GetSystem<KeyboardMovementSystem>().SubscribeToEvents(*eventBus);
   registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(*eventBus);
+  registry->GetSystem<ProjectileEmitterSystem>().SubscribeToEvents(*eventBus);
   registry->Update();
 
   // to make velocity act with respect to time rather than frame rate
@@ -212,6 +229,8 @@ void Game::Update() {
   registry->GetSystem<AnimationSystem>().Update();
   registry->GetSystem<CameraFollowSystem>().Update(camera);
   registry->GetSystem<CollisionSystem>().Update(*eventBus);
+  registry->GetSystem<ProjectileEmitterSystem>().Update();
+  registry->GetSystem<ProjectileLifecycleSystem>().Update();
 }
 
 void Game::Render() {

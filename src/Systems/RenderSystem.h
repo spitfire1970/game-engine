@@ -39,10 +39,6 @@ public:
                                             (sprite.isFixed ? 0 : camera.y)),
                            static_cast<int>(sprite.width * transform.scale.x),
                            static_cast<int>(sprite.height * transform.scale.y)};
-      Logger::Log("destRect " + std::to_string(destRect.x) + " " +
-                  std::to_string(destRect.y) + " " +
-                  std::to_string(destRect.w) + " " +
-                  std::to_string(destRect.h));
       SDL_RenderCopyEx(renderer, texture, &sprite.srcRect, &destRect,
                        transform.rotation, NULL, SDL_FLIP_NONE);
     }
