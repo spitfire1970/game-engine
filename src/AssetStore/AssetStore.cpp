@@ -1,5 +1,5 @@
-#include "../Logger/Logger.h"
 #include "AssetStore.h"
+#include "../Logger/Logger.h"
 #include "SDL2/SDL_image.h"
 
 AssetStore::~AssetStore() {

@@ -2,6 +2,7 @@
 #include "../AssetStore/AssetStore.h"
 #include "../Components/AnimationComponent.h"
 #include "../Components/CollisionComponent.h"
+#include "../Components/KeyboardControlComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -11,6 +12,7 @@
 #include "../Systems/CollisionRenderSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
+#include "../Systems/KeyboardControlSystem.h"
 #include "../Systems/KeyboardMovementSystem.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
@@ -94,6 +96,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<DamageSystem>();
   registry->AddSystem<KeyboardMovementSystem>();
+  registry->AddSystem<KeyboardControlSystem>();
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
@@ -101,7 +104,7 @@ void Game::LoadLevel(int level) {
   assetStore->AddTexture(renderer, "tilemap-image",
                          "./assets/tilemaps/jungle.png");
   assetStore->AddTexture(renderer, "chopper-image",
-                         "./assets/images/chopper.png");
+                         "./assets/images/chopper-spritesheet.png");
 
   // Load the tilemap
   int tileSize = 32;
@@ -133,10 +136,22 @@ void Game::LoadLevel(int level) {
   Entity chopper = registry->CreateEntity();
   chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
                                            glm::vec2(1.0, 1.0), 0.0);
-  chopper.AddComponent<RigidBodyComponent>(glm::vec2(5.0, 10.0));
+  chopper.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 20.0));
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
   chopper.AddComponent<AnimationComponent>(2, 10);
   chopper.AddComponent<CollisionComponent>(32, 32);
+  chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
+                                                 SDLK_LEFT, 100.0);
+
+  Entity chopper2 = registry->CreateEntity();
+  chopper2.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
+                                            glm::vec2(1.0, 1.0), 0.0);
+  chopper2.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 20.0));
+  chopper2.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
+  chopper2.AddComponent<AnimationComponent>(2, 10);
+  chopper2.AddComponent<CollisionComponent>(32, 32);
+  chopper2.AddComponent<KeyboardControlComponent>(SDLK_w, SDLK_d, SDLK_s,
+                                                  SDLK_a, 100.0);
 
   Entity tank = registry->CreateEntity();
   tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
@@ -146,7 +161,7 @@ void Game::LoadLevel(int level) {
   tank.AddComponent<CollisionComponent>(32, 32);
 
   Entity truck = registry->CreateEntity();
-  truck.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
+  truck.AddComponent<TransformComponent>(glm::vec2(100.0, 30.0),
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(40.0, 20.0));
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
@@ -172,6 +187,7 @@ void Game::Update() {
   // Perform the subscription of the events for all systems
   registry->GetSystem<DamageSystem>().SubscribeToEvents(*eventBus);
   registry->GetSystem<KeyboardMovementSystem>().SubscribeToEvents(*eventBus);
+  registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(*eventBus);
   registry->Update();
 
   // to make velocity act with respect to time rather than frame rate
