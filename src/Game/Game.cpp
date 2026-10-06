@@ -5,6 +5,7 @@
 #include "../Components/CollisionComponent.h"
 #include "../Components/KeyboardControlComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
+
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
@@ -145,6 +146,7 @@ void Game::LoadLevel(int level) {
       mapFile.ignore();
 
       Entity tile = registry->CreateEntity();
+      tile.Group("tiles");
       tile.AddComponent<TransformComponent>(
           glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
           glm::vec2(tileScale, tileScale), 0.0);
@@ -156,10 +158,12 @@ void Game::LoadLevel(int level) {
   Entity chopper = registry->CreateEntity();
   chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
                                            glm::vec2(1.0, 1.0), 0.0);
+  chopper.Tag("player");
   chopper.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 20.0));
   chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
   chopper.AddComponent<AnimationComponent>(2, 10);
   chopper.AddComponent<CollisionComponent>(32, 32);
+  chopper.AddComponent<HealthComponent>(100);
   chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
                                                  SDLK_LEFT, 100.0);
   chopper.AddComponent<ProjectileEmitterComponent>(
@@ -173,22 +177,29 @@ void Game::LoadLevel(int level) {
   chopper2.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
   chopper2.AddComponent<AnimationComponent>(2, 10);
   chopper2.AddComponent<CollisionComponent>(32, 32);
+  chopper2.AddComponent<HealthComponent>(100);
+
   chopper2.AddComponent<KeyboardControlComponent>(SDLK_w, SDLK_d, SDLK_s,
                                                   SDLK_a, 100.0);
 
   Entity tank = registry->CreateEntity();
+  tank.Group("enemies");
   tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
                                         glm::vec2(1.0, 1.0), 0.0);
   tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
   tank.AddComponent<CollisionComponent>(32, 32);
+  tank.AddComponent<HealthComponent>(100);
   tank.AddComponent<ProjectileEmitterComponent>(3000, 1000,
                                                 glm::vec2(50.0, 0.0));
 
   Entity truck = registry->CreateEntity();
+  truck.Group("enemies");
   truck.AddComponent<TransformComponent>(glm::vec2(100.0, 30.0),
                                          glm::vec2(1.0, 1.0), 0.0);
   truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+  truck.AddComponent<HealthComponent>(100);
+
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
   truck.AddComponent<CollisionComponent>(32, 32);
   truck.AddComponent<ProjectileEmitterComponent>(5000, 2000,

@@ -63,13 +63,15 @@ public:
           projectilePosition.y += (transform.scale.y * sprite.height / 2);
         }
         auto e = entity.registry->CreateEntity();
+        e.Group("projectiles");
         e.AddComponent<TransformComponent>(projectilePosition);
         e.AddComponent<RigidBodyComponent>(
             projectileEmitter.projectileVelocity);
         e.AddComponent<SpriteComponent>("bullet-image", 4, 4, 4);
         e.AddComponent<CollisionComponent>(4, 4);
         e.AddComponent<ProjectileComponent>(
-            projectileEmitter.projectileDuration);
+            entity.HasTag("player"), projectileEmitter.hitPercentDamage,
+            projectileEmitter.projectileLifecycleDuration);
         projectileEmitter.lastEmitTime = SDL_GetTicks();
       }
     }

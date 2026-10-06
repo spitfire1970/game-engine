@@ -41,6 +41,12 @@ public:
   bool operator!=(const Entity &other) const { return id != other.id; }
   bool operator>(const Entity &other) const { return id > other.id; }
   bool operator<(const Entity &other) const { return id < other.id; }
+
+  void Tag(const std::string &tag);
+  bool HasTag(const std::string &tag) const;
+  void Group(const std::string &group);
+  bool BelongsToGroup(const std::string &group) const;
+
   template <typename TComponent, typename... TArgs>
   void AddComponent(TArgs &&...args);
   template <typename TComponent> void RemoveComponent();
@@ -104,6 +110,12 @@ private:
       entityComponentSignatures; // index into this by entity id
   std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
+  std::unordered_map<std::string, Entity> entityPerTag;
+  std::unordered_map<int, std::string> tagPerEntity;
+
+  std::unordered_map<std::string, std::set<Entity>> entitiesPerGroup;
+  std::unordered_map<int, std::string> groupPerEntity;
+
 public:
   Registry() = default;
   void Update();
@@ -126,6 +138,18 @@ public:
   template <typename TSystem> void RemoveSystem();
   template <typename TSystem> bool HasSystem() const;
   template <typename TSystem> TSystem &GetSystem() const;
+
+  // Tag management
+  void TagEntity(Entity entity, const std::string &tag);
+  bool EntityHasTag(Entity entity, const std::string &tag) const;
+  Entity GetEntityByTag(const std::string &tag) const;
+  void RemoveEntityTag(Entity entity);
+
+  // Group management
+  void GroupEntity(Entity entity, const std::string &group);
+  bool EntityBelongsToGroup(Entity entity, const std::string &group) const;
+  std::vector<Entity> GetEntitiesByGroup(const std::string &group) const;
+  void RemoveEntityGroup(Entity entity);
 };
 
 template <typename TSystem, typename... TArgs>

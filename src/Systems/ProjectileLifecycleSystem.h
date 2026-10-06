@@ -11,7 +11,8 @@ public:
     for (auto entity : GetSystemEntities()) {
       auto projectile = entity.GetComponent<ProjectileComponent>();
 
-      if (SDL_GetTicks() - projectile.startTime > projectile.duration) {
+      if (SDL_GetTicks() - projectile.startTime >
+          projectile.lifecycleDuration) {
         entity.Kill();
       }
     }
