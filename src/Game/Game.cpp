@@ -163,7 +163,7 @@ void Game::LoadLevel(int level) {
           glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
           glm::vec2(tileScale, tileScale), 0.0);
       tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0,
-                                         false, srcRectX, srcRectY);
+                                         srcRectX, srcRectY);
     }
   }
   mapFile.close();
@@ -219,14 +219,15 @@ void Game::LoadLevel(int level) {
 
   Entity radar = registry->CreateEntity();
   radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74.0, 10.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1, true);
+                                         glm::vec2(1.0, 1.0), 0.0, true);
+  radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1);
   radar.AddComponent<AnimationComponent>(8, 5);
 
   Entity label = registry->CreateEntity();
   SDL_Color green = {0, 255, 0};
-  label.AddComponent<TextLabelComponent>(glm::vec2(windowWidth / 2 - 40, 10),
-                                         "CHOPPER 1.0", "charriot-font", green);
+  label.AddComponent<TransformComponent>(glm::vec2(windowWidth / 2 - 40, 10),
+                                         true);
+  label.AddComponent<TextLabelComponent>("CHOPPER 1.0", "charriot-font", green);
 }
 
 void Game::Setup() { LoadLevel(1); }

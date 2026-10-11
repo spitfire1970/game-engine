@@ -7,11 +7,15 @@
 
 class RenderTextSystem : public System {
 public:
-  RenderTextSystem() { RequireComponent<TextLabelComponent>(); }
+  RenderTextSystem() {
+    RequireComponent<TransformComponent>();
+    RequireComponent<TextLabelComponent>();
+  }
 
   void Update(SDL_Renderer *renderer, AssetStore &assetStore,
               glm::vec2 &camera) {
     for (auto entity : GetSystemEntities()) {
+      const auto &transform = entity.GetComponent<TransformComponent>();
       const auto &textlabel = entity.GetComponent<TextLabelComponent>();
 
       SDL_Surface *surface =
@@ -30,10 +34,10 @@ public:
       // the TTF_Font type so we can basically query/retrieve it
       SDL_QueryTexture(texture, NULL, NULL, &labelWidth, &labelHeight);
 
-      SDL_Rect dstRect = {static_cast<int>(textlabel.position.x -
-                                           (textlabel.isFixed ? 0 : camera.x)),
-                          static_cast<int>(textlabel.position.y -
-                                           (textlabel.isFixed ? 0 : camera.y)),
+      SDL_Rect dstRect = {static_cast<int>(transform.position.x -
+                                           (transform.isFixed ? 0 : camera.x)),
+                          static_cast<int>(transform.position.y -
+                                           (transform.isFixed ? 0 : camera.y)),
                           labelWidth, labelHeight};
 
       // srcRect is NULL because we want the entire texture to be mapped to

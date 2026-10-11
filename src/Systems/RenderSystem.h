@@ -34,9 +34,9 @@ public:
         sprite.width = sprite.srcRect.w;
       }
       SDL_Rect destRect = {static_cast<int>(transform.position.x -
-                                            (sprite.isFixed ? 0 : camera.x)),
+                                            (transform.isFixed ? 0 : camera.x)),
                            static_cast<int>(transform.position.y -
-                                            (sprite.isFixed ? 0 : camera.y)),
+                                            (transform.isFixed ? 0 : camera.y)),
                            static_cast<int>(sprite.width * transform.scale.x),
                            static_cast<int>(sprite.height * transform.scale.y)};
       SDL_RenderCopyEx(renderer, texture, &sprite.srcRect, &destRect,

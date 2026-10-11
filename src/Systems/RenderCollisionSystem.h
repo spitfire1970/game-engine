@@ -19,12 +19,12 @@ public:
       TransformComponent &transform = entity.GetComponent<TransformComponent>();
       CollisionComponent &collision = entity.GetComponent<CollisionComponent>();
 
-      // intentionally not querying isFixed here on the entity since
-      // spritecomponent is not required but also because we probably will not
-      // be colliding with anything that is fixed on the screen
-      const SDL_Rect rect = {static_cast<int>(transform.position.x - camera.x),
-                             static_cast<int>(transform.position.y - camera.y),
-                             collision.width, collision.height};
+      const SDL_Rect rect = {
+          static_cast<int>(transform.position.x -
+                           (transform.isFixed ? 0 : camera.x)),
+          static_cast<int>(transform.position.y -
+                           (transform.isFixed ? 0 : camera.y)),
+          collision.width, collision.height};
       SDL_SetRenderDrawColor(
           renderer, 255,
           (!entity.GetComponent<CollisionComponent>().isColliding) * 255, 0,

@@ -5,16 +5,14 @@
 #include <string>
 
 struct TextLabelComponent {
-  glm::vec2 position;
   std::string text;
   std::string assetId;
   SDL_Color color;
-  bool isFixed;
+  glm::vec2 offset;
 
-  TextLabelComponent(glm::vec2 position = glm::vec2(0),
-                     const std::string &text = "",
+  TextLabelComponent(const std::string &text = "",
                      const std::string &assetId = "",
-                     const SDL_Color &color = {0, 0, 0}, bool isFixed = true)
-      : position(position), text(text), assetId(assetId), color(color),
-        isFixed(isFixed) {}
+                     const SDL_Color &color = {0, 0, 0},
+                     glm::vec2 offset = glm::vec2(0))
+      : text(text), assetId(assetId), color(color), offset(offset) {}
 };
