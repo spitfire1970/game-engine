@@ -3,11 +3,11 @@
 #include "../Logger/Logger.h"
 #include <bitset>
 #include <deque>
+#include <memory>
 #include <set>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
 const unsigned int MAX_COMPONENTS = 32;
 
@@ -202,9 +202,6 @@ void Registry::AddComponent(Entity entity, TArgs &&...args) {
   componentPool->Set(entityId, newComponent);
 
   entityComponentSignatures[entityId].set(componentId);
-
-  Logger::Log("Component id " + std::to_string(componentId) +
-              " was added to entity id " + std::to_string(entityId));
 }
 
 template <typename TComponent> void Registry::RemoveComponent(Entity entity) {
@@ -212,8 +209,6 @@ template <typename TComponent> void Registry::RemoveComponent(Entity entity) {
   const auto entityId = entity.GetId();
 
   entityComponentSignatures[entityId].set(componentId, false);
-  Logger::Log("Component id " + std::to_string(componentId) +
-              " was removed from entity id " + std::to_string(entityId));
 }
 
 template <typename TComponent>

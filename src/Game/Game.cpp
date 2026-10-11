@@ -67,6 +67,10 @@ bool Game::Initialize() {
     Logger::Err("Error creating renderer");
     return 1;
   }
+  SDL_RendererInfo info;
+  SDL_GetRendererInfo(renderer, &info);
+  Logger::Log(std::string("video: ") + SDL_GetCurrentVideoDriver() +
+              ", renderer: " + info.name);
   isRunning = true;
   SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
   return 0;
