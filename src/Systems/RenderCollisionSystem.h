@@ -1,5 +1,4 @@
-#ifndef COLLISIONRENDERSYSTEM_H
-#define COLLISIONRENDERSYSTEM_H
+#pragma once
 
 #include "../AssetStore/AssetStore.h"
 #include "../Components/SpriteComponent.h"
@@ -8,9 +7,9 @@
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 
-class CollisionRenderSystem : public System {
+class RenderCollisionSystem : public System {
 public:
-  CollisionRenderSystem() {
+  RenderCollisionSystem() {
     RequireComponent<TransformComponent>();
     RequireComponent<CollisionComponent>();
   }
@@ -20,6 +19,9 @@ public:
       TransformComponent &transform = entity.GetComponent<TransformComponent>();
       CollisionComponent &collision = entity.GetComponent<CollisionComponent>();
 
+      // intentionally not querying isFixed here on the entity since
+      // spritecomponent is not required but also because we probably will not
+      // be colliding with anything that is fixed on the screen
       const SDL_Rect rect = {static_cast<int>(transform.position.x - camera.x),
                              static_cast<int>(transform.position.y - camera.y),
                              collision.width, collision.height};
@@ -35,5 +37,3 @@ public:
     }
   }
 };
-
-#endif

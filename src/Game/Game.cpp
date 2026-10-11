@@ -5,15 +5,14 @@
 #include "../Components/CollisionComponent.h"
 #include "../Components/KeyboardControlComponent.h"
 #include "../Components/ProjectileEmitterComponent.h"
-
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/TextLabelComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../EventBus/EventBus.h"
 #include "../Logger/Logger.h"
 #include "../Systems/AnimationSystem.h"
 #include "../Systems/CameraFollowSystem.h"
-#include "../Systems/CollisionRenderSystem.h"
 #include "../Systems/CollisionSystem.h"
 #include "../Systems/DamageSystem.h"
 #include "../Systems/KeyboardControlSystem.h"
@@ -21,7 +20,9 @@
 #include "../Systems/MovementSystem.h"
 #include "../Systems/ProjectileEmitterSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
+#include "../Systems/RenderCollisionSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/RenderTextSystem.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <fstream>
@@ -48,6 +49,10 @@ Game::~Game() { Logger::Log("Game destructor called!"); }
 bool Game::Initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     Logger::Err("Error init sdl");
+    return 1;
+  }
+  if (TTF_Init() != 0) {
+    Logger::Err("Error init sdl ttf");
     return 1;
   }
   SDL_DisplayMode displayMode;
@@ -109,7 +114,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<MovementSystem>();
   registry->AddSystem<RenderSystem>();
   registry->AddSystem<CollisionSystem>();
-  registry->AddSystem<CollisionRenderSystem>();
+  registry->AddSystem<RenderCollisionSystem>();
   registry->AddSystem<AnimationSystem>();
   registry->AddSystem<DamageSystem>();
   registry->AddSystem<KeyboardMovementSystem>();
@@ -117,6 +122,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<CameraFollowSystem>();
   registry->AddSystem<ProjectileEmitterSystem>();
   registry->AddSystem<ProjectileLifecycleSystem>();
+  registry->AddSystem<RenderTextSystem>();
 
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
@@ -129,6 +135,7 @@ void Game::LoadLevel(int level) {
   assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
   assetStore->AddTexture(renderer, "bullet-image",
                          "./assets/images/bullet.png");
+  assetStore->AddFont(20, "charriot-font", "./assets/fonts/charriot.ttf");
 
   // Load the tilemap
   int tileSize = 32;
@@ -215,6 +222,11 @@ void Game::LoadLevel(int level) {
                                          glm::vec2(1.0, 1.0), 0.0);
   radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1, true);
   radar.AddComponent<AnimationComponent>(8, 5);
+
+  Entity label = registry->CreateEntity();
+  SDL_Color green = {0, 255, 0};
+  label.AddComponent<TextLabelComponent>(glm::vec2(windowWidth / 2 - 40, 10),
+                                         "CHOPPER 1.0", "charriot-font", green);
 }
 
 void Game::Setup() { LoadLevel(1); }
@@ -255,15 +267,18 @@ void Game::Render() {
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
   registry->GetSystem<RenderSystem>().Update(renderer, *assetStore, camera);
+  registry->GetSystem<RenderTextSystem>().Update(renderer, *assetStore, camera);
   if (debugMode) {
-    registry->GetSystem<CollisionRenderSystem>().Update(renderer, camera);
+    registry->GetSystem<RenderCollisionSystem>().Update(renderer, camera);
   }
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }
 
 void Game::Destroy() {
+  assetStore->ClearAssets();
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
+  TTF_Quit();
   SDL_Quit();
 }
