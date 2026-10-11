@@ -45,10 +45,10 @@ Game::Game() {
 
 Game::~Game() { Logger::Log("Game destructor called!"); }
 
-void Game::Initialize() {
+bool Game::Initialize() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     Logger::Err("Error init sdl");
-    return;
+    return 1;
   }
   SDL_DisplayMode displayMode;
   SDL_GetCurrentDisplayMode(0, &displayMode);
@@ -59,16 +59,17 @@ void Game::Initialize() {
                        windowWidth, windowHeight, SDL_WINDOW_BORDERLESS);
   if (!window) {
     Logger::Err("error creating window");
-    return;
+    return 1;
   }
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (!renderer) {
     Logger::Err("Error creating renderer");
-    return;
+    return 1;
   }
   isRunning = true;
   SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+  return 0;
 }
 
 void Game::Run() {

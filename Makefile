@@ -4,12 +4,21 @@
 CC = g++
 LANG_STD = -std=c++17
 COMPILER_FLAGS = -Wall -Wfatal-errors -g -O0
-INCLUDE_PATH = -I/opt/homebrew/include -I/opt/homebrew/opt/lua@5.4/include/lua -I"./libs/"
+
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+    INCLUDE_PATH = -I/opt/homebrew/include -I/opt/homebrew/opt/lua@5.4/include/lua -I"./libs/"
+    LINKER_FLAGS = -L/opt/homebrew/opt/lua@5.4/lib -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -llua
+else
+    INCLUDE_PATH = -I/usr/include/lua5.4 -I"./libs/"
+    LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -llua5.4
+endif
+
 
 # Dynamically find all .cpp files recursively so you don't have to update this list
 SRC_FILES = $(shell find src -name "*.cpp")
 
-LINKER_FLAGS = -L/opt/homebrew/opt/lua@5.4/lib -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -llua
 OBJ_NAME = gameengine
 
 ###############################################################################

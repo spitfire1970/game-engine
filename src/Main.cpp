@@ -2,7 +2,9 @@
 
 int main(int argc, char *argv[]) {
   Game game;
-  game.Initialize();
+  if (game.Initialize()) {
+    return EXIT_FAILURE;
+  };
   game.Run();
   game.Destroy();
   return 0;

@@ -25,7 +25,7 @@ private:
 public:
   Game();
   ~Game();
-  void Initialize();
+  bool Initialize();
   void Run();
   void LoadLevel(int level);
   void Setup();

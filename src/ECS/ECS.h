@@ -7,6 +7,7 @@
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 const unsigned int MAX_COMPONENTS = 32;
 
