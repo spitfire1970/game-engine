@@ -34,11 +34,12 @@ public:
       // the TTF_Font type so we can basically query/retrieve it
       SDL_QueryTexture(texture, NULL, NULL, &labelWidth, &labelHeight);
 
-      SDL_Rect dstRect = {static_cast<int>(transform.position.x -
-                                           (transform.isFixed ? 0 : camera.x)),
-                          static_cast<int>(transform.position.y -
-                                           (transform.isFixed ? 0 : camera.y)),
-                          labelWidth, labelHeight};
+      SDL_Rect dstRect = {
+          static_cast<int>(transform.position.x + textlabel.offset.x -
+                           (transform.isFixed ? 0 : camera.x)),
+          static_cast<int>(transform.position.y + textlabel.offset.y -
+                           (transform.isFixed ? 0 : camera.y)),
+          labelWidth, labelHeight};
 
       // srcRect is NULL because we want the entire texture to be mapped to
       // dstRect

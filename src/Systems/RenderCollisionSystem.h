@@ -15,7 +15,7 @@ public:
   }
   void Update(SDL_Renderer *renderer, glm::vec2 &camera) {
     auto entities = GetSystemEntities();
-    for (auto entity : entities) {
+    for (const auto &entity : entities) {
       TransformComponent &transform = entity.GetComponent<TransformComponent>();
       CollisionComponent &collision = entity.GetComponent<CollisionComponent>();
 
@@ -32,7 +32,7 @@ public:
       SDL_RenderDrawRect(renderer, &rect);
     }
 
-    for (auto &entity : entities) {
+    for (const auto &entity : entities) {
       entity.GetComponent<CollisionComponent>().isColliding = false;
     }
   }
