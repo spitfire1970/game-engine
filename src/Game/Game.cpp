@@ -28,6 +28,9 @@
 #include <SDL2/SDL_image.h>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl2.h>
+#include <imgui/imgui_impl_sdlrenderer2.h>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -58,27 +61,46 @@ bool Game::Initialize() {
   }
   SDL_DisplayMode displayMode;
   SDL_GetCurrentDisplayMode(0, &displayMode);
-  windowWidth = 800;
   windowHeight = 600;
+  windowWidth = static_cast<int>(600.0 * displayMode.w / displayMode.h);
   window =
       SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       windowWidth, windowHeight, SDL_WINDOW_BORDERLESS);
+                       displayMode.w, displayMode.h, SDL_WINDOW_BORDERLESS);
   if (!window) {
     Logger::Err("error creating window");
     return 1;
   }
-  renderer = SDL_CreateRenderer(
-      window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  renderer =
+      SDL_CreateRenderer(window, -1,
+                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
+                             SDL_RENDERER_TARGETTEXTURE);
   if (!renderer) {
     Logger::Err("Error creating renderer");
     return 1;
   }
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+  gameTarget =
+      SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                        SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
   SDL_RendererInfo info;
   SDL_GetRendererInfo(renderer, &info);
   Logger::Log(std::string("video: ") + SDL_GetCurrentVideoDriver() +
               ", renderer: " + info.name);
+
+  // Initialize the ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+  ImGui_ImplSDLRenderer2_Init(renderer);
+
   isRunning = true;
-  SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+  SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
   return 0;
 }
 
@@ -94,18 +116,20 @@ void Game::Run() {
 void Game::ProcessInput() {
   SDL_Event sdlEvent;
   while (SDL_PollEvent(&sdlEvent)) {
+    ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
+
     switch (sdlEvent.type) {
     case SDL_QUIT:
       isRunning = false;
       break;
     case SDL_KEYDOWN:
       eventBus->emitEvent<KeyboardEvent>(sdlEvent.key.keysym.sym);
-      if (sdlEvent.key.keysym.sym == SDLK_ESCAPE) {
+      if (sdlEvent.key.keysym.sym == SDLK_ESCAPE)
         isRunning = false;
-      }
-      if (sdlEvent.key.keysym.sym == SDLK_d) {
+
+      if (sdlEvent.key.keysym.sym == SDLK_d)
         debugMode = !debugMode;
-      }
+
       break;
     }
   }
@@ -271,22 +295,45 @@ void Game::Update() {
 
 void Game::Render() {
 
+  ImGui_ImplSDLRenderer2_NewFrame();
+  ImGui_ImplSDL2_NewFrame();
+
+  ImGui::NewFrame();
+  if (debugMode) {
+    ImGui::ShowDemoWindow();
+  }
+  ImGui::Render();
   // do things in back buffer
+  // 1. Draw the game into the small off-screen texture
+  SDL_SetRenderTarget(renderer, gameTarget);
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
   SDL_RenderClear(renderer);
   registry->GetSystem<RenderSystem>().Update(renderer, *assetStore, camera);
   registry->GetSystem<RenderTextSystem>().Update(renderer, *assetStore, camera);
-  registry->GetSystem<RenderHealthSystem>().Update(renderer, *assetStore,
-                                                   camera);
+  registry->GetSystem<RenderHealthSystem>().Update(renderer, camera);
   if (debugMode) {
     registry->GetSystem<RenderCollisionSystem>().Update(renderer, camera);
   }
+
+  // 2. Switch back to the window and stretch the game to fill it
+  SDL_SetRenderTarget(renderer, nullptr);
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  SDL_RenderClear(renderer);
+  SDL_RenderCopy(renderer, gameTarget, nullptr, nullptr);
+
+  // 3. ImGui on top, at native resolution
+  ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }
 
 void Game::Destroy() {
+  ImGui_ImplSDLRenderer2_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
   assetStore->ClearAssets();
+  SDL_DestroyTexture(gameTarget);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   TTF_Quit();

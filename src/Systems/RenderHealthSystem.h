@@ -15,8 +15,7 @@ public:
     RequireComponent<TextLabelComponent>();
   }
 
-  void Update(SDL_Renderer *renderer, AssetStore &assetStore,
-              glm::vec2 &camera) {
+  void Update(SDL_Renderer *renderer, glm::vec2 &camera) {
     const auto &entities = GetSystemEntities();
     for (const auto &entity : entities) {
       const auto &transform = entity.GetComponent<TransformComponent>();

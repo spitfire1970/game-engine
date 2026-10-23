@@ -21,6 +21,7 @@ private:
   std::unique_ptr<EventBus> eventBus;
   bool debugMode = false;
   glm::vec2 camera = glm::vec2(0.0, 0.0);
+  SDL_Texture *gameTarget = nullptr;
 
 public:
   Game();
