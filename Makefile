@@ -13,7 +13,7 @@ ifeq ($(UNAME_S),Darwin)
     INCLUDE_PATH = -I/opt/homebrew/include -I/opt/homebrew/opt/lua@5.4/include/lua -I"./libs/" -I/opt/homebrew/include/SDL2
     LINKER_FLAGS = -L/opt/homebrew/opt/lua@5.4/lib -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -llua
 else
-    INCLUDE_PATH = -I/usr/include/lua5.4 -I"./libs/"
+    INCLUDE_PATH = -I/usr/include/lua5.4 -I"./libs/" -I/usr/include/SDL2
     LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -llua5.4
 endif
 

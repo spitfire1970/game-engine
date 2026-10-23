@@ -21,6 +21,7 @@
 #include "../Systems/ProjectileEmitterSystem.h"
 #include "../Systems/ProjectileLifecycleSystem.h"
 #include "../Systems/RenderCollisionSystem.h"
+#include "../Systems/RenderGUISystem.h"
 #include "../Systems/RenderHealthSystem.h"
 #include "../Systems/RenderSystem.h"
 #include "../Systems/RenderTextSystem.h"
@@ -149,6 +150,7 @@ void Game::LoadLevel(int level) {
   registry->AddSystem<ProjectileLifecycleSystem>();
   registry->AddSystem<RenderTextSystem>();
   registry->AddSystem<RenderHealthSystem>();
+  registry->AddSystem<RenderGUISystem>();
 
   assetStore->AddTexture(renderer, "tank-image",
                          "./assets/images/tank-panther-right.png");
@@ -294,15 +296,6 @@ void Game::Update() {
 }
 
 void Game::Render() {
-
-  ImGui_ImplSDLRenderer2_NewFrame();
-  ImGui_ImplSDL2_NewFrame();
-
-  ImGui::NewFrame();
-  if (debugMode) {
-    ImGui::ShowDemoWindow();
-  }
-  ImGui::Render();
   // do things in back buffer
   // 1. Draw the game into the small off-screen texture
   SDL_SetRenderTarget(renderer, gameTarget);
@@ -322,8 +315,9 @@ void Game::Render() {
   SDL_RenderCopy(renderer, gameTarget, nullptr, nullptr);
 
   // 3. ImGui on top, at native resolution
-  ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-
+  if (debugMode) {
+    registry->GetSystem<RenderGUISystem>().Update(renderer);
+  }
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
 }

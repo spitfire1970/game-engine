@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../AssetStore/AssetStore.h"
-#include "../Components/SpriteComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include <SDL2/SDL.h>
