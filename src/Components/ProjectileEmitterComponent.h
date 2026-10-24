@@ -5,23 +5,15 @@
 
 struct ProjectileEmitterComponent {
   int projectileLifecycleDuration;
-  int frequency;       // milliseconds
-  Uint32 lastEmitTime; // milliseconds
-  float speed;
   glm::vec2 projectileVelocity;
+  int frequency; // milliseconds
   int hitPercentDamage;
+  Uint32 lastEmitTime; // milliseconds
 
   ProjectileEmitterComponent(int projectileLifecycleDuration = 1000,
-                             int frequency = 1000, float speed = 15.0f,
-                             int hitPercentDamage = 10)
+                             glm::vec2 velocity = glm::vec2(20, 20),
+                             int frequency = 1000, int hitPercentDamage = 10)
       : projectileLifecycleDuration(projectileLifecycleDuration),
-        frequency(frequency), lastEmitTime(SDL_GetTicks()), speed(speed),
-        projectileVelocity(speed, speed), hitPercentDamage(hitPercentDamage) {}
-
-  ProjectileEmitterComponent(int projectileLifecycleDuration, int frequency,
-                             glm::vec2 velocity, int hitPercentDamage = 10)
-      : projectileLifecycleDuration(projectileLifecycleDuration),
-        frequency(frequency), lastEmitTime(SDL_GetTicks()),
-        speed(glm::length(velocity)), projectileVelocity(velocity),
-        hitPercentDamage(hitPercentDamage) {}
+        projectileVelocity(velocity), frequency(frequency),
+        hitPercentDamage(hitPercentDamage), lastEmitTime(SDL_GetTicks()) {}
 };

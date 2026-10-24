@@ -42,9 +42,15 @@ public:
         d.y = 1;
       if (rigidBody.velocity.y < 0)
         d.y = -1;
-      projectileEmitter.projectileVelocity = glm::vec2(
-          projectileEmitter.speed * d.x, projectileEmitter.speed * d.y);
+      const float x = projectileEmitter.projectileVelocity.x;
+      const float y = projectileEmitter.projectileVelocity.y;
+      float speed = sqrt((x * x) + (y * y));
+      projectileEmitter.projectileVelocity =
+          glm::vec2(speed * d.x, speed * d.y);
       projectileEmitter.lastEmitTime = -1 * projectileEmitter.frequency;
+
+      // can break since we only have one component with camera follow
+      break;
     }
   }
 

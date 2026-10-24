@@ -208,7 +208,7 @@ void Game::LoadLevel(int level) {
   chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
                                                  SDLK_LEFT, 100.0);
   chopper.AddComponent<ProjectileEmitterComponent>(
-      5000, std::numeric_limits<int>::max(), 150.0);
+      5000, glm::vec2(150.0), std::numeric_limits<int>::max());
   chopper.AddComponent<CameraFollowComponent>();
   chopper.AddComponent<TextLabelComponent>();
 
@@ -232,8 +232,8 @@ void Game::LoadLevel(int level) {
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
   tank.AddComponent<CollisionComponent>(32, 32);
   tank.AddComponent<HealthComponent>(100);
-  tank.AddComponent<ProjectileEmitterComponent>(3000, 1000,
-                                                glm::vec2(50.0, 0.0));
+  tank.AddComponent<ProjectileEmitterComponent>(3000, glm::vec2(50.0, 0.0),
+                                                1000);
   tank.AddComponent<TextLabelComponent>();
 
   Entity truck = registry->CreateEntity();
@@ -246,8 +246,8 @@ void Game::LoadLevel(int level) {
 
   truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
   truck.AddComponent<CollisionComponent>(32, 32);
-  truck.AddComponent<ProjectileEmitterComponent>(5000, 2000,
-                                                 glm::vec2(0.0, 100.0));
+  truck.AddComponent<ProjectileEmitterComponent>(5000, glm::vec2(0.0, 100.0),
+                                                 2000);
 
   Entity radar = registry->CreateEntity();
   radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74.0, 10.0),
@@ -316,7 +316,7 @@ void Game::Render() {
 
   // 3. ImGui on top, at native resolution
   if (debugMode) {
-    registry->GetSystem<RenderGUISystem>().Update(renderer);
+    registry->GetSystem<RenderGUISystem>().Update(renderer, registry, camera);
   }
   // replace front buffer with back buffer
   SDL_RenderPresent(renderer);
