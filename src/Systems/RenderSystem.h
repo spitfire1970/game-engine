@@ -40,7 +40,7 @@ public:
                            static_cast<int>(sprite.width * transform.scale.x),
                            static_cast<int>(sprite.height * transform.scale.y)};
       SDL_RenderCopyEx(renderer, texture, &sprite.srcRect, &destRect,
-                       transform.rotation, NULL, SDL_FLIP_NONE);
+                       transform.rotation, NULL, sprite.flip);
     }
   }
 };

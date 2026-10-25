@@ -180,6 +180,7 @@ void Game::LoadLevel(int level) {
                          "./assets/images/tank-panther-right.png");
   assetStore->AddTexture(renderer, "truck-image",
                          "./assets/images/truck-ford-right.png");
+  assetStore->AddTexture(renderer, "tree-image", "./assets/images/tree.png");
   assetStore->AddTexture(renderer, "tilemap-image",
                          "./assets/tilemaps/jungle.png");
   assetStore->AddTexture(renderer, "chopper-image",
@@ -250,21 +251,19 @@ void Game::LoadLevel(int level) {
 
   Entity tank = registry->CreateEntity();
   tank.Group("enemies");
-  tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0),
+  tank.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
                                         glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+  tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
   tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
   tank.AddComponent<CollisionComponent>(32, 32);
   tank.AddComponent<HealthComponent>(100);
-  tank.AddComponent<ProjectileEmitterComponent>(3000, glm::vec2(50.0, 0.0),
-                                                1000);
   tank.AddComponent<TextLabelComponent>();
 
   Entity truck = registry->CreateEntity();
   truck.Group("enemies");
-  truck.AddComponent<TransformComponent>(glm::vec2(100.0, 30.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+  truck.AddComponent<TransformComponent>(glm::vec2(100.0, 300.0),
+                                         glm::vec2(1.0, 1.0), 90.0);
+  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 25.0));
   truck.AddComponent<HealthComponent>(100);
   truck.AddComponent<TextLabelComponent>();
 
@@ -272,6 +271,34 @@ void Game::LoadLevel(int level) {
   truck.AddComponent<CollisionComponent>(32, 32);
   truck.AddComponent<ProjectileEmitterComponent>(5000, glm::vec2(0.0, 100.0),
                                                  2000);
+
+  Entity treeA = registry->CreateEntity();
+  treeA.Group("obstacles");
+  treeA.AddComponent<TransformComponent>(glm::vec2(400.0, 200.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  treeA.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
+  treeA.AddComponent<CollisionComponent>(14, 32);
+
+  Entity treeB = registry->CreateEntity();
+  treeB.Group("obstacles");
+  treeB.AddComponent<TransformComponent>(glm::vec2(600.0, 200.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  treeB.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
+  treeB.AddComponent<CollisionComponent>(14, 32);
+
+  Entity treeC = registry->CreateEntity();
+  treeC.Group("obstacles");
+  treeC.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  treeC.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
+  treeC.AddComponent<CollisionComponent>(14, 32);
+
+  Entity treeD = registry->CreateEntity();
+  treeD.Group("obstacles");
+  treeD.AddComponent<TransformComponent>(glm::vec2(100.0, 400.0),
+                                         glm::vec2(1.0, 1.0), 0.0);
+  treeD.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
+  treeD.AddComponent<CollisionComponent>(14, 32);
 
   Entity radar = registry->CreateEntity();
   radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 74.0, 10.0),
@@ -308,6 +335,7 @@ void Game::Update() {
   registry->GetSystem<KeyboardMovementSystem>().SubscribeToEvents(*eventBus);
   registry->GetSystem<KeyboardControlSystem>().SubscribeToEvents(*eventBus);
   registry->GetSystem<ProjectileEmitterSystem>().SubscribeToEvents(*eventBus);
+  registry->GetSystem<MovementSystem>().SubscribeToEvents(*eventBus);
   registry->Update();
 
   // to make velocity act with respect to time rather than frame rate

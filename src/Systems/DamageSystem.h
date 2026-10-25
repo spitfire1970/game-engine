@@ -20,8 +20,6 @@ public:
   void OnCollision(CollisionEvent &event) {
     Entity a = event.a;
     Entity b = event.b;
-    Logger::Log("Collision event emitted: " + std::to_string(a.GetId()) +
-                " and " + std::to_string(b.GetId()));
 
     if (a.BelongsToGroup("projectiles") && b.HasTag("player")) {
       OnProjectileHitsEntity(a, b, true);
