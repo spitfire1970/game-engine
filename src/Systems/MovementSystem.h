@@ -4,7 +4,6 @@
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
-#include "../Logger/Logger.h"
 
 class MovementSystem : public System {
 public:
@@ -19,6 +18,15 @@ public:
           entity.GetComponent<RigidBodyComponent>();
       transform.position.x += rigidBody.velocity.x * deltaTime;
       transform.position.y += rigidBody.velocity.y * deltaTime;
+
+      bool isEntityOutsideMap =
+          (transform.position.x > Game::mapWidth ||
+           transform.position.y > Game::mapHeight || transform.position.x < 0 ||
+           transform.position.y < 0);
+
+      if (isEntityOutsideMap && !entity.HasTag("player")) {
+        entity.Kill();
+      }
     }
   }
 };

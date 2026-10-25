@@ -62,8 +62,8 @@ bool Game::Initialize() {
   }
   SDL_DisplayMode displayMode;
   SDL_GetCurrentDisplayMode(0, &displayMode);
-  windowHeight = 600;
-  windowWidth = static_cast<int>(600.0 * displayMode.w / displayMode.h);
+  windowHeight = displayMode.h / 2;
+  windowWidth = static_cast<int>(windowHeight * displayMode.w / displayMode.h);
   window =
       SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                        displayMode.w, displayMode.h, SDL_WINDOW_BORDERLESS);
@@ -80,6 +80,30 @@ bool Game::Initialize() {
     return 1;
   }
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+  // summary: game distances/calculations (i.e. "logical untis") are in the same
+  // realm as the "window" (windowWidth/windowHeight) as well as game texture
+  // (sized to windowWidth/windowHeight).
+  // they are exactly the same ( by exactly equal i mean that it's not just same
+  // "realm", it's that the values is the exact same in window dimensions as in
+  // our logical units) for fixed HUD entities and are the exact same after
+  // subtracting the camera offset from the other game values.
+  // the windowWidth/windowHeight are also the same as cameraWidth/cameraHeight
+  // implicitly (i.e. they are the same thing in our case since our entire
+  // window is just the game camera) so a better name is probably
+  // viewWidth/viewHeight.
+
+  // the mapWidth/mapHeight are calculated based solely on tileScale and the
+  // number and size of individual tiles (could be smaller or larger than
+  // texture/window which determines the amount of "zoom" of the map relative to
+  // the screen)
+
+  // we logically treat the above two together because they are related (like
+  // using the map dimensions for boundaries)
+
+  // the display is in a separate realm of units, but we make sure that our
+  // window/game as in the same ratio and then SDL takes care of
+  // expanding/contracting the game texture to the display when we call
+  // SDL_RenderCopy
   gameTarget =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                         SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
@@ -296,10 +320,12 @@ void Game::Update() {
 }
 
 void Game::Render() {
-  // do things in back buffer
+  // do things in backbuffer
   // 1. Draw the game into the small off-screen texture
   SDL_SetRenderTarget(renderer, gameTarget);
   SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
+
+  // clear backbuffer with dark grey
   SDL_RenderClear(renderer);
   registry->GetSystem<RenderSystem>().Update(renderer, *assetStore, camera);
   registry->GetSystem<RenderTextSystem>().Update(renderer, *assetStore, camera);
@@ -308,10 +334,15 @@ void Game::Render() {
     registry->GetSystem<RenderCollisionSystem>().Update(renderer, camera);
   }
 
-  // 2. Switch back to the window and stretch the game to fill it
+  // 2. Switch back to the window  (passing nullptr uses the window the renderer
+  // was created with)
   SDL_SetRenderTarget(renderer, nullptr);
+
+  // clear window with black
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
+
+  // and stretch the game to fill it
   SDL_RenderCopy(renderer, gameTarget, nullptr, nullptr);
 
   // 3. ImGui on top, at native resolution

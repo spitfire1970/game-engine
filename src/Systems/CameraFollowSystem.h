@@ -17,10 +17,13 @@ public:
 
       camera.x = transform.position.x - (Game::windowWidth / 2);
       camera.y = transform.position.y - (Game::windowHeight / 2);
-      camera.x =
-          glm::clamp<float>(camera.x, 0.0, Game::mapWidth - Game::windowWidth);
-      camera.y = glm::clamp<float>(camera.y, 0.0,
-                                   Game::mapHeight - Game::windowHeight);
+
+      // can use glm::clamp but it internally does the below (helps to see the
+      // order of ops)
+      camera.x = std::min(std::max(camera.x, 0.0f),
+                          (float)(Game::mapWidth - Game::windowWidth));
+      camera.y = std::min(std::max(camera.y, 0.0f),
+                          (float)(Game::mapHeight - Game::windowHeight));
     }
   }
 };
