@@ -13,8 +13,8 @@ public:
   KeyboardMovementSystem() = default;
   void SubscribeToEvents(EventBus &eventBus) {
     auto f = [](KeyboardEvent &event) {
-      Logger::Log("key " + std::string(SDL_GetKeyName(event.symbol)) +
-                  " was pressed");
+      // Logger::Log("key " + std::string(SDL_GetKeyName(event.symbol)) +
+      //             " was pressed");
     };
     eventBus.subscribe<KeyboardEvent>(f);
   }

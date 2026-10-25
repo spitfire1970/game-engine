@@ -81,13 +81,40 @@ public:
       transform.position.x += rigidBody.velocity.x * deltaTime;
       transform.position.y += rigidBody.velocity.y * deltaTime;
 
-      bool isEntityOutsideMap =
-          (transform.position.x > Game::mapWidth ||
-           transform.position.y > Game::mapHeight || transform.position.x < 0 ||
-           transform.position.y < 0);
-
-      if (isEntityOutsideMap && !entity.HasTag("player")) {
-        entity.Kill();
+      // restriction within map boundary (killing entities except main player which
+      // stops)
+      int fallbackMargin = 100;
+      int entityW = fallbackMargin;
+      int entityH = fallbackMargin;
+      if (entity.HasComponent<SpriteComponent>()) {
+        auto &sprite = entity.GetComponent<SpriteComponent>();
+        entityW = sprite.width * transform.scale.x;
+        entityH = sprite.height * transform.scale.y;
+      }
+      bool isEntityOutsideMap;
+      if (entity.HasTag("player")) {
+        // treat the player as a point box
+        isEntityOutsideMap = !checkAABBCollision(
+            rigidBody.velocity.x > 0 ? transform.position.x + entityW
+                                     : transform.position.x,
+            rigidBody.velocity.y > 0 ? transform.position.y + entityH
+                                     : transform.position.y,
+            1, 1, 0, 0, Game::mapWidth, Game::mapHeight);
+        if (isEntityOutsideMap) {
+          // move it so that it is where it was in the last frame i.e. just
+          // inside the map
+          transform.position.x -= rigidBody.velocity.x * deltaTime;
+          transform.position.y -= rigidBody.velocity.y * deltaTime;
+          // set velocity to zero so it is now stationary
+          entity.GetComponent<RigidBodyComponent>().velocity = glm::vec2(0);
+        }
+      } else {
+        isEntityOutsideMap = !checkAABBCollision(
+            transform.position.x, transform.position.y, entityW, entityH, 0, 0,
+            Game::mapWidth, Game::mapHeight);
+        if (isEntityOutsideMap) {
+          entity.Kill();
+        }
       }
     }
   }

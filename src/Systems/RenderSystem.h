@@ -6,6 +6,7 @@
 #include "../Components/TransformComponent.h"
 #include "../ECS/ECS.h"
 #include "../Logger/Logger.h"
+#include "CollisionSystem.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
 
@@ -26,6 +27,13 @@ public:
     for (auto entity : entities) {
       TransformComponent &transform = entity.GetComponent<TransformComponent>();
       SpriteComponent &sprite = entity.GetComponent<SpriteComponent>();
+      bool isOutsideView = !checkAABBCollision(
+          camera.x, camera.y, Game::windowWidth, Game::windowWidth,
+          transform.position.x, transform.position.y,
+          sprite.width * transform.scale.x, sprite.height * transform.scale.y);
+      if (isOutsideView && !transform.isFixed) {
+        continue;
+      }
       SDL_Texture *texture = assetStore.GetTexture(sprite.assetId);
       if (sprite.srcRect.w == 0 || sprite.srcRect.h == 0) {
         SDL_QueryTexture(texture, NULL, NULL, &sprite.srcRect.w,

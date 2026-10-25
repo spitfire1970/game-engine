@@ -240,7 +240,7 @@ void Game::LoadLevel(int level) {
   Entity chopper2 = registry->CreateEntity();
   chopper2.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
                                             glm::vec2(1.0, 1.0), 0.0);
-  chopper2.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 20.0));
+  chopper2.AddComponent<RigidBodyComponent>(glm::vec2(-20.0, -20.0));
   chopper2.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
   chopper2.AddComponent<AnimationComponent>(2, 10);
   chopper2.AddComponent<CollisionComponent>(32, 32);
