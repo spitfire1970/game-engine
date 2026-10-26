@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <memory>
+#include <sol/sol.hpp>
 
 const int FPS = 1200;
 const int MILLISECS_PER_FRAME = 1000 / FPS;
@@ -34,6 +35,7 @@ public:
   void Render();
   void Destroy();
 
+  static sol::state lua;
   static int windowWidth;
   static int windowHeight;
   static int mapWidth;

@@ -3,7 +3,7 @@
 ###############################################################################
 CC = g++
 LANG_STD = -std=c++17
-COMPILER_FLAGS = -Wall -Wfatal-errors -g -O0
+COMPILER_FLAGS = -Wall -Wfatal-errors -g -O0 -Wno-unknown-warning-option
 
 UNAME_S := $(shell uname -s)
 

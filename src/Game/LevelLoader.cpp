@@ -12,25 +12,57 @@
 
 #include "Game.h"
 #include <fstream>
+#include <sol/sol.hpp>
 
 LevelLoader::LevelLoader(AssetStore &assetStore, SDL_Renderer *renderer,
                          Registry &registry)
     : assetStore(assetStore), renderer(renderer), registry(registry) {};
 LevelLoader::~LevelLoader() = default;
-void LevelLoader::LoadLevel(int level) {
-  assetStore.AddTexture(renderer, "tank-image",
-                        "./assets/images/tank-panther-right.png");
-  assetStore.AddTexture(renderer, "truck-image",
-                        "./assets/images/truck-ford-right.png");
-  assetStore.AddTexture(renderer, "tree-image", "./assets/images/tree.png");
-  assetStore.AddTexture(renderer, "tilemap-image",
-                        "./assets/tilemaps/jungle.png");
-  assetStore.AddTexture(renderer, "chopper-image",
-                        "./assets/images/chopper-spritesheet.png");
-  assetStore.AddTexture(renderer, "radar-image", "./assets/images/radar.png");
-  assetStore.AddTexture(renderer, "bullet-image", "./assets/images/bullet.png");
-  assetStore.AddFont(20, "charriot-font-20", "./assets/fonts/charriot.ttf");
-  assetStore.AddFont(8, "arial-font-8", "./assets/fonts/arial.ttf");
+
+void LevelLoader::LoadLevel(int levelNumber) {
+  // This checks the syntax of our script, but it does not execute the script
+  sol::load_result script = Game::lua.load_file(
+      "./assets/scripts/Level" + std::to_string(levelNumber) + ".lua");
+  if (!script.valid()) {
+    sol::error err = script;
+    std::string errorMessage = err.what();
+    Logger::Err("Error loading the lua script: " + errorMessage);
+    return;
+  }
+
+  // Executes the script using the Sol state
+  Game::lua.script_file("./assets/scripts/Level" + std::to_string(levelNumber) +
+                        ".lua");
+
+  // Read the big table for the current level
+  sol::table level = Game::lua["Level"];
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Read the level assets
+  ////////////////////////////////////////////////////////////////////////////
+  sol::table assets = level["assets"];
+
+  int i = 0;
+  while (true) {
+    sol::optional<sol::table> hasAsset = assets[i];
+    if (hasAsset == sol::nullopt) {
+      break;
+    }
+    sol::table asset = assets[i];
+    std::string assetType = asset["type"];
+    std::string assetId = asset["id"];
+    if (assetType == "texture") {
+      assetStore.AddTexture(renderer, assetId, asset["file"]);
+      Logger::Log("A new texture asset was added to the asset store, id: " +
+                  assetId);
+    }
+    if (assetType == "font") {
+      assetStore.AddFont(asset["font_size"], assetId, asset["file"]);
+      Logger::Log("A new font asset was added to the asset store, id: " +
+                  assetId);
+    }
+    i++;
+  }
 
   // Load the tilemap
   int tileSize = 32;

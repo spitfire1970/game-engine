@@ -31,6 +31,7 @@ int Game::windowWidth;
 int Game::windowHeight;
 int Game::mapWidth;
 int Game::mapHeight;
+sol::state Game::lua;
 
 Game::Game() {
   isRunning = false;
@@ -167,6 +168,7 @@ void Game::Setup() {
   registry->AddSystem<RenderHealthSystem>();
   registry->AddSystem<RenderGUISystem>();
 
+  lua.open_libraries(sol::lib::base, sol::lib::math);
   LevelLoader levelLoader(*assetStore, renderer, *registry);
   levelLoader.LoadLevel(1);
 }
