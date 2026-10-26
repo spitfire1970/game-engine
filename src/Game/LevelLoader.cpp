@@ -64,17 +64,18 @@ void LevelLoader::LoadLevel(int levelNumber) {
     i++;
   }
 
-  // Load the tilemap
-  int tileSize = 32;
-  double tileScale = 1.5;
-  int mapNumCols = 25;
-  int mapNumRows = 20;
-  Game::mapWidth = tileSize * mapNumCols * tileScale;
-  Game::mapHeight = tileSize * mapNumRows * tileScale;
-
+  ////////////////////////////////////////////////////////////////////////////
+  // Read the level tilemap information
+  ////////////////////////////////////////////////////////////////////////////
+  sol::table map = level["tilemap"];
+  std::string mapFilePath = map["map_file"];
+  std::string mapTextureAssetId = map["texture_asset_id"];
+  int mapNumRows = map["num_rows"];
+  int mapNumCols = map["num_cols"];
+  int tileSize = map["tile_size"];
+  double mapScale = map["scale"];
   std::fstream mapFile;
-  mapFile.open("./assets/tilemaps/jungle.map");
-
+  mapFile.open(mapFilePath);
   for (int y = 0; y < mapNumRows; y++) {
     for (int x = 0; x < mapNumCols; x++) {
       char ch;
@@ -85,15 +86,17 @@ void LevelLoader::LoadLevel(int levelNumber) {
       mapFile.ignore();
 
       Entity tile = registry.CreateEntity();
-      tile.Group("tiles");
       tile.AddComponent<TransformComponent>(
-          glm::vec2(x * (tileScale * tileSize), y * (tileScale * tileSize)),
-          glm::vec2(tileScale, tileScale), 0.0);
-      tile.AddComponent<SpriteComponent>("tilemap-image", tileSize, tileSize, 0,
-                                         srcRectX, srcRectY);
+          glm::vec2(x * (mapScale * tileSize), y * (mapScale * tileSize)),
+          glm::vec2(mapScale, mapScale), 0.0);
+      tile.AddComponent<SpriteComponent>(mapTextureAssetId, tileSize, tileSize,
+                                         0, srcRectX, srcRectY);
     }
   }
   mapFile.close();
+  Game::mapWidth = mapNumCols * tileSize * mapScale;
+  Game::mapHeight = mapNumRows * tileSize * mapScale;
+
   Entity chopper = registry.CreateEntity();
   chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
                                            glm::vec2(1.0, 1.0), 0.0);

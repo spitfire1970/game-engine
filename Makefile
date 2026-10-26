@@ -34,4 +34,4 @@ run:
 	./$(OBJ_NAME)
 
 clean:
-	rm -f $(OBJ_NAME)
+	rm -f $(OBJ_NAME) imgui.ini
