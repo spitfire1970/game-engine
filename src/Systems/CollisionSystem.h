@@ -1,6 +1,7 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
+#include "../Components/CollisionComponent.h"
 #include "../ECS/ECS.h"
 #include "../Events/CollisionEvent.h"
 #include "../Logger/Logger.h"

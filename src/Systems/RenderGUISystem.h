@@ -1,3 +1,4 @@
+#include "../Components/TextLabelComponent.h"
 #include "../ECS/ECS.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl2.h>

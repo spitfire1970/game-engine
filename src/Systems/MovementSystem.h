@@ -81,8 +81,8 @@ public:
       transform.position.x += rigidBody.velocity.x * deltaTime;
       transform.position.y += rigidBody.velocity.y * deltaTime;
 
-      // restriction within map boundary (killing entities except main player which
-      // stops)
+      // restriction within map boundary (killing entities except main player
+      // which stops)
       int fallbackMargin = 100;
       int entityW = fallbackMargin;
       int entityH = fallbackMargin;
