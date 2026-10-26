@@ -12,11 +12,12 @@
 
 #include "Game.h"
 #include <fstream>
+#include <limits>
 #include <sol/sol.hpp>
 
 LevelLoader::LevelLoader(AssetStore &assetStore, SDL_Renderer *renderer,
                          Registry &registry)
-    : assetStore(assetStore), renderer(renderer), registry(registry) {};
+    : assetStore(assetStore), renderer(renderer), registry(registry) {}
 LevelLoader::~LevelLoader() = default;
 
 void LevelLoader::LoadLevel(int levelNumber) {
@@ -29,7 +30,7 @@ void LevelLoader::LoadLevel(int levelNumber) {
     Logger::Err("Error loading the lua script: " + errorMessage);
     return;
   }
-
+  Game::lua["window_width"] = Game::windowWidth;
   // Executes the script using the Sol state
   Game::lua.script_file("./assets/scripts/Level" + std::to_string(levelNumber) +
                         ".lua");
@@ -75,9 +76,9 @@ void LevelLoader::LoadLevel(int levelNumber) {
     for (int x = 0; x < mapNumCols; x++) {
       char ch;
       mapFile.get(ch);
-      int srcRectY = std::atoi(&ch) * tileSize;
+      int srcRectY = (ch - '0') * tileSize;
       mapFile.get(ch);
-      int srcRectX = std::atoi(&ch) * tileSize;
+      int srcRectX = (ch - '0') * tileSize;
       mapFile.ignore();
 
       Entity tile = registry.CreateEntity();
@@ -91,97 +92,136 @@ void LevelLoader::LoadLevel(int levelNumber) {
   mapFile.close();
   Game::mapWidth = mapNumCols * tileSize * mapScale;
   Game::mapHeight = mapNumRows * tileSize * mapScale;
+  sol::table entities = level["entities"];
+  for (std::size_t i = 1; i <= entities.size(); i++) {
+    sol::table entity = entities[i];
+    Entity newEntity = registry.CreateEntity();
 
-  Entity chopper = registry.CreateEntity();
-  chopper.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
-                                           glm::vec2(1.0, 1.0), 0.0);
-  chopper.Tag("player");
-  chopper.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 20.0));
-  chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
-  chopper.AddComponent<AnimationComponent>(2, 10);
-  chopper.AddComponent<CollisionComponent>(32, 32);
-  chopper.AddComponent<HealthComponent>(100);
-  chopper.AddComponent<KeyboardControlComponent>(SDLK_UP, SDLK_RIGHT, SDLK_DOWN,
-                                                 SDLK_LEFT, 100.0);
-  chopper.AddComponent<ProjectileEmitterComponent>(
-      5000, glm::vec2(150.0), std::numeric_limits<int>::max());
-  chopper.AddComponent<CameraFollowComponent>();
-  chopper.AddComponent<TextLabelComponent>();
+    // Tag
+    sol::optional<std::string> tag = entity["tag"];
+    if (tag) {
+      newEntity.Tag(*tag);
+    }
 
-  Entity chopper2 = registry.CreateEntity();
-  chopper2.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
-                                            glm::vec2(1.0, 1.0), 0.0);
-  chopper2.AddComponent<RigidBodyComponent>(glm::vec2(-20.0, -20.0));
-  chopper2.AddComponent<SpriteComponent>("chopper-image", 32, 32, 2);
-  chopper2.AddComponent<AnimationComponent>(2, 10);
-  chopper2.AddComponent<CollisionComponent>(32, 32);
-  chopper2.AddComponent<HealthComponent>(100);
+    // Group
+    sol::optional<std::string> group = entity["group"];
+    if (group) {
+      newEntity.Group(*group);
+    }
 
-  chopper2.AddComponent<KeyboardControlComponent>(SDLK_w, SDLK_d, SDLK_s,
-                                                  SDLK_a, 100.0);
+    // Components
+    sol::optional<sol::table> hasComponents = entity["components"];
+    if (!hasComponents) {
+      continue;
+    }
+    sol::table components = *hasComponents;
 
-  Entity tank = registry.CreateEntity();
-  tank.Group("enemies");
-  tank.AddComponent<TransformComponent>(glm::vec2(500.0, 200.0),
-                                        glm::vec2(1.0, 1.0), 0.0);
-  tank.AddComponent<RigidBodyComponent>(glm::vec2(20.0, 0.0));
-  tank.AddComponent<SpriteComponent>("tank-image", 32, 32, 2);
-  tank.AddComponent<CollisionComponent>(32, 32);
-  tank.AddComponent<HealthComponent>(100);
-  tank.AddComponent<TextLabelComponent>();
+    // Transform
+    sol::optional<sol::table> transform = components["transform"];
+    if (transform) {
+      sol::table t = *transform;
+      newEntity.AddComponent<TransformComponent>(
+          glm::vec2(t["position"]["x"].get<float>(),
+                    t["position"]["y"].get<float>()),
+          glm::vec2(t["scale"]["x"].get_or(1.0), t["scale"]["y"].get_or(1.0)),
+          t["rotation"].get_or(0.0), t["fixed"].get_or(false));
+    }
 
-  Entity truck = registry.CreateEntity();
-  truck.Group("enemies");
-  truck.AddComponent<TransformComponent>(glm::vec2(100.0, 300.0),
-                                         glm::vec2(1.0, 1.0), 90.0);
-  truck.AddComponent<RigidBodyComponent>(glm::vec2(0.0, 25.0));
-  truck.AddComponent<HealthComponent>(100);
-  truck.AddComponent<TextLabelComponent>();
+    // RigidBody
+    sol::optional<sol::table> rigidbody = components["rigidbody"];
+    if (rigidbody) {
+      sol::table r = *rigidbody;
+      newEntity.AddComponent<RigidBodyComponent>(glm::vec2(
+          r["velocity"]["x"].get_or(0.0), r["velocity"]["y"].get_or(0.0)));
+    }
 
-  truck.AddComponent<SpriteComponent>("truck-image", 32, 32, 1);
-  truck.AddComponent<CollisionComponent>(32, 32);
-  truck.AddComponent<ProjectileEmitterComponent>(5000, glm::vec2(0.0, 100.0),
-                                                 2000);
+    // Sprite
+    sol::optional<sol::table> sprite = components["sprite"];
+    if (sprite) {
+      sol::table s = *sprite;
+      newEntity.AddComponent<SpriteComponent>(
+          s["texture_asset_id"].get<std::string>(), s["width"].get<int>(),
+          s["height"].get<int>(), s["z_index"].get_or(1));
+    }
 
-  Entity treeA = registry.CreateEntity();
-  treeA.Group("obstacles");
-  treeA.AddComponent<TransformComponent>(glm::vec2(400.0, 200.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  treeA.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
-  treeA.AddComponent<CollisionComponent>(14, 32);
+    // Animation
+    sol::optional<sol::table> animation = components["animation"];
+    if (animation) {
+      sol::table a = *animation;
+      newEntity.AddComponent<AnimationComponent>(a["num_frames"].get_or(1),
+                                                 a["speed_rate"].get_or(1));
+    }
 
-  Entity treeB = registry.CreateEntity();
-  treeB.Group("obstacles");
-  treeB.AddComponent<TransformComponent>(glm::vec2(600.0, 200.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  treeB.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
-  treeB.AddComponent<CollisionComponent>(14, 32);
+    // Collision
+    sol::optional<sol::table> collider = components["boxcollider"];
+    if (collider) {
+      sol::table c = *collider;
+      newEntity.AddComponent<CollisionComponent>(
+          c["width"].get<int>(), c["height"].get<int>(),
+          glm::vec2(c["offset"]["x"].get_or(0.0),
+                    c["offset"]["y"].get_or(0.0)));
+    }
 
-  Entity treeC = registry.CreateEntity();
-  treeC.Group("obstacles");
-  treeC.AddComponent<TransformComponent>(glm::vec2(100.0, 200.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  treeC.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
-  treeC.AddComponent<CollisionComponent>(14, 32);
+    // Health
+    sol::optional<sol::table> health = components["health"];
+    if (health) {
+      sol::table h = *health;
+      newEntity.AddComponent<HealthComponent>(
+          static_cast<int>(h["health_percentage"].get_or(100)));
+    }
 
-  Entity treeD = registry.CreateEntity();
-  treeD.Group("obstacles");
-  treeD.AddComponent<TransformComponent>(glm::vec2(100.0, 400.0),
-                                         glm::vec2(1.0, 1.0), 0.0);
-  treeD.AddComponent<SpriteComponent>("tree-image", 16, 32, 1);
-  treeD.AddComponent<CollisionComponent>(14, 32);
+    // KeyboardControl
+    sol::optional<sol::table> keyboard = components["keyboard_controller"];
+    if (keyboard) {
+      sol::table k = *keyboard;
+      auto key = [&k](const char *field, const char *fallback) {
+        std::string name = k[field].get_or(std::string(fallback));
+        return SDL_GetKeyFromName(name.c_str());
+      };
+      newEntity.AddComponent<KeyboardControlComponent>(
+          key("up_key", "Up"), key("right_key", "Right"),
+          key("down_key", "Down"), key("left_key", "Left"),
+          k["speed"].get_or(100.0));
+    }
 
-  Entity radar = registry.CreateEntity();
-  radar.AddComponent<TransformComponent>(
-      glm::vec2(Game::windowWidth - 74.0, 10.0), glm::vec2(1.0, 1.0), 0.0,
-      true);
-  radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 1);
-  radar.AddComponent<AnimationComponent>(8, 5);
+    // ProjectileEmitter
+    sol::optional<sol::table> projectileEmitter =
+        components["projectile_emitter"];
+    if (projectileEmitter) {
+      sol::table p = *projectileEmitter;
+      double durationSeconds = p["projectile_duration"].get_or(1.0);
+      sol::optional<double> repeatSeconds = p["repeat_frequency"];
+      int repeatMs = repeatSeconds
+                         ? static_cast<int>(*repeatSeconds * 1000)
+                         : std::numeric_limits<int>::max(); // no auto-fire
+      newEntity.AddComponent<ProjectileEmitterComponent>(
+          static_cast<int>(durationSeconds * 1000),
+          glm::vec2(p["projectile_velocity"]["x"].get_or(20.0),
+                    p["projectile_velocity"]["y"].get_or(20.0)),
+          repeatMs, static_cast<int>(p["hit_percentage_damage"].get_or(10)));
+    }
 
-  Entity label = registry.CreateEntity();
-  SDL_Color green = {0, 255, 0};
-  label.AddComponent<TransformComponent>(
-      glm::vec2(Game::windowWidth / 2 - 40, 10), true);
-  label.AddComponent<TextLabelComponent>("CHOPPER 1.0", "charriot-font-20",
-                                         green);
-};
+    // CameraFollow
+    sol::optional<sol::table> cameraFollow = components["camera_follow"];
+    if (cameraFollow) {
+      newEntity.AddComponent<CameraFollowComponent>();
+    }
+
+    // TextLabel
+    sol::optional<sol::table> textLabel = components["text_label"];
+    if (textLabel) {
+      sol::table l = *textLabel;
+      sol::optional<std::string> text = l["text"];
+      if (text) {
+        SDL_Color color = {static_cast<Uint8>(l["color"]["r"].get_or(255)),
+                           static_cast<Uint8>(l["color"]["g"].get_or(255)),
+                           static_cast<Uint8>(l["color"]["b"].get_or(255)),
+                           static_cast<Uint8>(l["color"]["a"].get_or(255))};
+        newEntity.AddComponent<TextLabelComponent>(
+            *text, l["font_asset_id"].get<std::string>(), color);
+      } else {
+        newEntity.AddComponent<TextLabelComponent>();
+      }
+    }
+  }
+}

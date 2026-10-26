@@ -32,46 +32,29 @@ public:
   }
   // TODO: the shadows get messed up so using SDL_FLIP_HORIZONTAL is probably
   // not even what we want
+  static void ToggleFlip(SpriteComponent &sprite, SDL_RendererFlip bit) {
+    sprite.flip = static_cast<SDL_RendererFlip>(sprite.flip ^ bit);
+  }
+
   void OnObstacleHit(Entity enemy) {
-    if (enemy.HasComponent<RigidBodyComponent>()) {
-      auto &rigidBody = enemy.GetComponent<RigidBodyComponent>();
-      const glm::vec2 vel = rigidBody.velocity;
+    if (!enemy.HasComponent<RigidBodyComponent>())
+      return;
 
-      if (vel.x != 0) {
-        rigidBody.velocity.x = vel.x * -1;
-        if (enemy.HasComponent<SpriteComponent>()) {
-          auto &sprite = enemy.GetComponent<SpriteComponent>();
-          const SDL_RendererFlip flip = sprite.flip;
-          // horizontal
-          // flipped?
-          if ((flip & SDL_FLIP_HORIZONTAL) == SDL_FLIP_HORIZONTAL) {
-            sprite.flip =
-                (SDL_RendererFlip)(sprite.flip & (~SDL_FLIP_HORIZONTAL));
-          } else {
-            sprite.flip = (SDL_RendererFlip)(sprite.flip | SDL_FLIP_HORIZONTAL);
-          }
-        }
-      }
+    auto &rigidBody = enemy.GetComponent<RigidBodyComponent>();
+    rigidBody.velocity =
+        -rigidBody.velocity; // negating a 0 component is harmless
 
-      // TODO: change this to SDL_FLIP_VERTICAL later?
-      if (vel.y != 0) {
-        rigidBody.velocity.y = vel.y * -1;
-        if (enemy.HasComponent<SpriteComponent>()) {
-          auto &sprite = enemy.GetComponent<SpriteComponent>();
+    if (!enemy.HasComponent<SpriteComponent>())
+      return;
+    auto &sprite = enemy.GetComponent<SpriteComponent>();
 
-          const SDL_RendererFlip flip = sprite.flip;
-          // vertical
-          // flipped?
-          if ((flip & SDL_FLIP_HORIZONTAL) == SDL_FLIP_HORIZONTAL) {
-            sprite.flip =
-                (SDL_RendererFlip)(sprite.flip & (~SDL_FLIP_HORIZONTAL));
-          } else {
-            sprite.flip = (SDL_RendererFlip)(sprite.flip | SDL_FLIP_HORIZONTAL);
-          }
-        }
-      }
-    }
-  };
+    if (rigidBody.velocity.x != 0)
+      ToggleFlip(sprite, SDL_FLIP_HORIZONTAL);
+    if (rigidBody.velocity.y != 0)
+      ToggleFlip(
+          sprite,
+          SDL_FLIP_HORIZONTAL); // TODO: change this to SDL_FLIP_VERTICAL later?
+  }
 
   void Update(double deltaTime) {
     for (auto entity : GetSystemEntities()) {
