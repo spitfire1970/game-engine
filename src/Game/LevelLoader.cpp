@@ -42,26 +42,21 @@ void LevelLoader::LoadLevel(int levelNumber) {
   ////////////////////////////////////////////////////////////////////////////
   sol::table assets = level["assets"];
 
-  int i = 0;
-  while (true) {
-    sol::optional<sol::table> hasAsset = assets[i];
-    if (hasAsset == sol::nullopt) {
-      break;
-    }
+  for (std::size_t i = 1; i <= assets.size(); i++) {
     sol::table asset = assets[i];
-    std::string assetType = asset["type"];
-    std::string assetId = asset["id"];
+    std::string assetType = asset["type"].get<std::string>();
+    std::string assetId = asset["id"].get<std::string>();
+    std::string assetFile = asset["file"].get<std::string>();
+
     if (assetType == "texture") {
-      assetStore.AddTexture(renderer, assetId, asset["file"]);
+      assetStore.AddTexture(renderer, assetId, assetFile);
       Logger::Log("A new texture asset was added to the asset store, id: " +
                   assetId);
-    }
-    if (assetType == "font") {
-      assetStore.AddFont(asset["font_size"], assetId, asset["file"]);
+    } else if (assetType == "font") {
+      assetStore.AddFont(asset["font_size"].get<int>(), assetId, assetFile);
       Logger::Log("A new font asset was added to the asset store, id: " +
                   assetId);
     }
-    i++;
   }
 
   ////////////////////////////////////////////////////////////////////////////

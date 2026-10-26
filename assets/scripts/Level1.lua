@@ -4,7 +4,6 @@ Level = {
     -- Table to define the list of assets
     ----------------------------------------------------
     assets = {
-        [0] =
         { type = "texture", id = "tank-image",       file = "./assets/images/tank-panther-right.png" },
         { type = "texture", id = "truck-image",      file = "./assets/images/truck-ford-right.png" },
         { type = "texture", id = "tree-image",       file = "./assets/images/tree.png" },
